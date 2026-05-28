@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 
-# Summoner = __import__("summoner").Summoner
 from playerfactory import PlayerFactory
+from itemfactory import ItemFactory
 
 
 class Map:
     __COUNT = 0
-    ALLOWED_TEAMS = ("blue", "red")
+    __ALLOWED_TEAMS = ("blue", "red")
     __PLAYER_PER_TEAM = 2
 
-    def __init__(self, name, blue=[], red=[], size=8):
+    def __init__(self, name, blue={}, red={}, size=8):
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
         Map.__COUNT += 1
@@ -41,38 +41,20 @@ class Map:
         return self.__red
 
     @red.setter
-    def red(self, summoners):
-        if not isinstance(summoners, list):
-            raise TypeError("Summoners Must be a List.")
-        self.__red = []
-        for summoner in summoners:
-            self.add_summoner(summoner, "red")
+    def red(self, players):
+        if not isinstance(players, dict):
+            raise TypeError("Players Must be a Dictionary.")
+        self.__red = {}
 
     @property
     def blue(self):
         return self.__blue
 
     @blue.setter
-    def blue(self, summoners):
-        if not isinstance(summoners, list):
-            raise TypeError("Summoners Must be a List.")
-        self.__blue = []
-        for summoner in summoners:
-            self.add_summoner(summoner, "blue")
-
-    def add_summoner(self, summoner, team):
-        if team not in Map.ALLOWED_TEAMS:
-            raise ValueError("Team must be either blue or red.")
-        if team == "red":
-            if len(self.red) >= 5:
-                raise ValueError("Red Team Must Have 5 Players.")
-            summoner.team = "red"
-            self.red.append(summoner)
-        if team == "blue":
-            if len(self.blue) >= 5:
-                raise ValueError("Blue Team Must Have 5 Players.")
-            summoner.team = "blue"
-            self.blue.append(summoner)
+    def blue(self, players):
+        if not isinstance(players, dict):
+            raise TypeError("Players Must be a Dictionary.")
+        self.__blue = {}
 
     def __str__(self):
         map_name = f"Map Name: {self.name}"
@@ -122,6 +104,8 @@ class Map:
                 match args[0]:
                     case "add":
                         self.__add(*args[1:])
+                    case "buy":
+                        self.__buy(*args[1:])
                     case "help":
                         self.__help()
                     case _:
@@ -138,7 +122,7 @@ class Map:
             raise TypeError("Team should be a string")
         if team not in self.__ALLOWED_TEAMS:
             raise ValueError("Invalid Team")
-        if any(player_name == x.name for x in self.red + self.blue):
+        if self.__get_player(player_name) is not None:
             raise ValueError(f"{player_name} already selected")
         match team:
             case "red":
@@ -147,16 +131,30 @@ class Map:
                 player = PlayerFactory(player_name)
                 player.row = self.size
                 player.column = 0
-                self.red.append(player)
+                self.red[player_name] = player
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
                 player.row = self.size
                 player.column = 0
-                self.blue.append(player)
+                self.blue[player_name] = player
         print("New player added")
         print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
+
+    def __buy(self, item_name, player_name):
+        player = self.__get_player(player_name)
+        if player is None:
+            raise ValueError(f"Inactive player ({player_name}) cannot buy item")
+        item = ItemFactory(item_name)
+        player.buy(item)
+
+    def __get_player(self, player_name):
+        if player_name in self.blue:
+            return self.blue[player_name]
+        if player_name in self.red:
+            return self.red[player_name]
+        return None
 
 
 class Square:
