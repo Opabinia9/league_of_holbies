@@ -7,8 +7,16 @@ Player = __import__("Player").Player
 
 def PlayerFactory(player):
     players = {
-        "Sam": KingPlayer
-        #"Marcus": SmellyPlayer
+        "Yasuo": Yasuo()
+        "Yurnero": Yurnero()
+        "Ashe": Ashe()
+        "MoghulKhan": MoghulKhan()
+        "Gangplank": Gangplank()
+        "Teemo": Teemo()
+        "Meepo": Meepo()
+        "Pudge": Pudge()
+        "MissFortune": MissFortune()
+        "Barathrum": Barathrum()
     }
 
     if not isinstance(player, str):
