@@ -2,11 +2,13 @@
 
 
 # Summoner = __import__("summoner").Summoner
+from playerfactory import PlayerFactory
 
 
 class Map:
     __COUNT = 0
-    ALLOWED_TEAMS = ("blue", "red")
+    __ALLOWED_TEAMS = ("blue", "red")
+    __PLAYER_PER_TEAM = 2
     print_symbol = "12345"
     champion_symbol = "C"
 
@@ -44,10 +46,6 @@ class Map:
     def red(self, summoners):
         if not isinstance(summoners, list):
             raise TypeError("Summoners Must be a List.")
-        # if not len(summoners) == 1:
-        #     raise ValueError("Red Team Must Have 1 Players.")
-        # if any(type(summoner) is not Summoner for summoner in summoners):
-        #     raise TypeError("All Players must be Summoners.")
         self.__red = []
         for summoner in summoners:
             self.add_summoner(summoner, "red")
@@ -60,10 +58,6 @@ class Map:
     def blue(self, summoners):
         if not isinstance(summoners, list):
             raise TypeError("Summoners Must be a List.")
-        # if not len(summoners) == 1:
-        # raise ValueError("blue Team Must Have 1 Players.")
-        # if any(type(summoner) is not Summoner for summoner in summoners):
-        #     raise TypeError("All Players must be Summoners.")
         self.__blue = []
         for summoner in summoners:
             self.add_summoner(summoner, "blue")
@@ -135,6 +129,8 @@ class Map:
             command = input(f"{self.name} >> ")
             args = command.split()
             match args[0]:
+                case "add":
+                    self.__add(*args[1:])
                 case "help":
                     self.__help()
                 case _:
@@ -143,6 +139,23 @@ class Map:
     def __help(self):
         print("Available commands:")
         print("help")
+
+    def __add(self, team, player_name):
+        if type(team) is not str:
+            raise TypeError("Team should be a string")
+        if team not in self.__ALLOWED_TEAMS:
+            raise ValueError("Invalid Team")
+        match team:
+            case "red":
+                if len(self.red) > self.__PLAYER_PER_TEAM:
+                    raise ValueError("Team already full")
+                player = PlayerFactory(player_name)
+                self.red.append(player)
+            case "blue":
+                if len(self.blue) > self.__PLAYER_PER_TEAM:
+                    raise ValueError("Team already full")
+                player = PlayerFactory(player_name)
+                self.blue.append(player)
 
 
 class square:

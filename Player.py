@@ -27,8 +27,8 @@ class Player(ABC):
     @abstractmethod
     def move(self): ...
 
-    @abstractmethod
-    def get_short_name(self): ...
+    def get_short_name(self):
+        return self.name[:3].capitalize()
 
     """Name of user/champion"""
     @property
