@@ -69,7 +69,14 @@ class Actualizer(item):
     
     def use(self, user):
     print(f"{user} is attacking with {self.name}")
-    
+
+class DivineRapier(item):
+    def __init__(self):
+    super().__init__("Divine Rapier", 5600, 300, 0)
+
+    def use(self, user):
+    print(f"{user} is attcking with {self.name}")
+
 class ArchangelsStaff(item):
     def __init__(self):
     super().__init__("Archangels Staff", 2900, 70, 0)
