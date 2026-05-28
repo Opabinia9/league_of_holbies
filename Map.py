@@ -7,9 +7,9 @@ from playerfactory import PlayerFactory
 
 class Map:
     __COUNT = 0
-    __ALLOWED_TEAMS = ("blue", "red")
+    ALLOWED_TEAMS = ("blue", "red")
     __PLAYER_PER_TEAM = 2
-    print_symbol = "12345"
+    print_symbol = "#"
     champion_symbol = "C"
 
     def __init__(self, name, blue=[], red=[], size=8):
@@ -103,27 +103,19 @@ class Map:
 
     def print_map(self):
         out = ""
-        out += "-" * (self.size + 4) + "\n"
+        border = "|---"
+        space = "|{occupied}"
+        occupied = "   "
+
         for y in range(self.size):
-            out += "| "
-            for x in range(self.size):
-                sq = None
-                for s in self.__squares:
-                    if s.coordinates[0] == x and s.coordinates[1] == y:
-                        sq = s
-                        break
-
-                out += Map.print_symbol
-                if x == self.size - 1:
-                    out += " |"
-
-            if y != self.size - 1:
-                out += "\n"
-        out += "\n" + "-" * (self.size + 4) + "\n"
-
+            out += border * self.size + "|\n"
+            out += f"{space * self.size}|\n" * 3
+            if y == self.size - 1:
+                out += border * self.size + "|\n"
         return out
 
     def launch_game(self):
+        print(self.print_map())
         print(f"welcome to {self.name}")
         while True:
             command = input(f"{self.name} >> ")
