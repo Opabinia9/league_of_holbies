@@ -1,22 +1,19 @@
 #!/usr/bin/python3
 Player = __import__("Player").Player
-
-"""class SamPlayer(Player):
-    def __init__(self):
-        super().__init__("Sam", 100, 20, 20, 2000, ["gold"], 10)"""
+from sub_player import *
 
 def PlayerFactory(player):
     players = {
-        "Yasuo": Yasuo()
-        "Yurnero": Yurnero()
-        "Ashe": Ashe()
-        "MoghulKhan": MoghulKhan()
-        "Gangplank": Gangplank()
-        "Teemo": Teemo()
-        "Meepo": Meepo()
-        "Pudge": Pudge()
-        "MissFortune": MissFortune()
-        "Barathrum": Barathrum()
+        "Yasuo": Yasuo,
+        "Yurnero": Yurnero,
+        "Ashe": Ashe,
+        "MoghulKhan": MoghulKhan,
+        "Gangplank": Gangplank,
+        "Teemo": Teemo,
+        "Meepo": Meepo,
+        "Pudge": Pudge,
+        "MissFortune": MissFortune,
+        "Barathrum": Barathrum
     }
 
     if not isinstance(player, str):
@@ -26,7 +23,3 @@ def PlayerFactory(player):
         raise ValueError("player not found")
 
     return players[player]()
-
-"""if __name__ == "__main__":
-    samcharacter = PlayerFactory("Sam")
-    print(samcharacter)"""
