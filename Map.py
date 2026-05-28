@@ -128,13 +128,16 @@ class Map:
         while True:
             command = input(f"{self.name} >> ")
             args = command.split()
-            match args[0]:
-                case "add":
-                    self.__add(*args[1:])
-                case "help":
-                    self.__help()
-                case _:
-                    print(f"Undefined command: {args[0]}")
+            try:
+                match args[0]:
+                    case "add":
+                        self.__add(*args[1:])
+                    case "help":
+                        self.__help()
+                    case _:
+                        raise ValueError(f"Undefined command: {args[0]}")
+            except BaseException as err:
+                print(f"Error: {err}")
 
     def __help(self):
         print("Available commands:")
@@ -145,17 +148,21 @@ class Map:
             raise TypeError("Team should be a string")
         if team not in self.__ALLOWED_TEAMS:
             raise ValueError("Invalid Team")
+        if any(player_name == x.name for x in self.red + self.blue):
+            raise ValueError(f"{player_name} already selected")
         match team:
             case "red":
-                if len(self.red) > self.__PLAYER_PER_TEAM:
+                if len(self.red) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
                 self.red.append(player)
             case "blue":
-                if len(self.blue) > self.__PLAYER_PER_TEAM:
+                if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
                 self.blue.append(player)
+        print("New player added")
+        print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
 
 class square:
