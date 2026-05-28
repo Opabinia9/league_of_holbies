@@ -9,8 +9,6 @@ class Map:
     __COUNT = 0
     ALLOWED_TEAMS = ("blue", "red")
     __PLAYER_PER_TEAM = 2
-    print_symbol = "#"
-    champion_symbol = "C"
 
     def __init__(self, name, blue=[], red=[], size=8):
         if Map.__COUNT >= 1:
@@ -23,9 +21,9 @@ class Map:
             self.red = red
         self.size = size
         self.__squares = []
-        for y in range(self.size):
-            for x in range(self.size):
-                self.__squares.append(square(x, y, self.size))
+        for row in range(self.size):
+            for column in range(self.size):
+                self.__squares.append(Square(row, column, self.size))
 
     def __del__(self):
         Map.__COUNT = 0
@@ -147,19 +145,23 @@ class Map:
                 if len(self.red) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
+                player.row = self.size
+                player.column = 0
                 self.red.append(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
+                player.row = self.size
+                player.column = 0
                 self.blue.append(player)
         print("New player added")
         print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
 
-class square:
-    def __init__(self, x, y, size=4):
-        self.coordinates = [x, y, size]
+class Square:
+    def __init__(self, row, column, size=4):
+        self.coordinates = [row, column, size]
 
     @property
     def size(self):
@@ -174,17 +176,17 @@ class square:
         return self.__row
 
     @row.setter
-    def row(self, y):
-        if y > self.size:
+    def row(self, row):
+        if row > self.size:
             raise ValueError("there is no space for your space!")
-        self.__row = y
+        self.__row = row
 
     @property
     def column(self):
         return self.__column
 
     @column.setter
-    def column(self, x):
-        if x > self.size:
+    def column(self, column):
+        if column > self.size:
             raise ValueError("there is no space for your space!")
-        self.__column = x
+        self.__column = column

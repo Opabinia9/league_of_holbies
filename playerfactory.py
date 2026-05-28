@@ -2,6 +2,7 @@
 Player = __import__("Player").Player
 from sub_player import *
 
+
 def PlayerFactory(player):
     players = {
         "Yasuo": Yasuo,
@@ -13,7 +14,7 @@ def PlayerFactory(player):
         "Meepo": Meepo,
         "Pudge": Pudge,
         "MissFortune": MissFortune,
-        "Barathrum": Barathrum
+        "Barathrum": Barathrum,
     }
 
     if not isinstance(player, str):
@@ -22,4 +23,4 @@ def PlayerFactory(player):
     if player not in players:
         raise ValueError("player not found")
 
-    return players[player]()
+    return [players][player]()

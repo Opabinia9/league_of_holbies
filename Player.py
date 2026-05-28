@@ -10,20 +10,15 @@ class Player(ABC):
 
     __MAX_ITEMS = 6
 
-    def __init__(self, name, hp, mana, gold, inventory, attack_score):
+    def __init__(self, name, hp, mana, gold, inventory, attack_score, row=0, column=0):
         self.name = name
         self.hp = hp
         self.mana = mana
         self.gold = gold
         self.inventory = inventory
         self.attack_score = attack_score
-        for team in ["blue", "red"]:
-            if team == "blue":
-                self.__row = self.size
-                self.__column = 0
-            else:
-                self.__row = 0
-                self.__column = self.size
+        self.row = row
+        self.column = column
 
     @abstractmethod
     def attack(self): ...
@@ -35,10 +30,9 @@ class Player(ABC):
             raise BaseException("Not Enough Gold!!!")
         if len(self.inventory) >= self.__MAX_ITEMS:
             raise ValueError("Not enough space in inventory")
-    
+
         self.gold = self.gold - item.price
         self.inventory.append(self.item)
-            
 
     @abstractmethod
     def move(self): ...
@@ -123,13 +117,13 @@ class Player(ABC):
         return self.__row
 
     @row.setter
-    def row(self, y):
-        self.__row = y
+    def row(self, row):
+        self.__row = row
 
     @property
     def column(self):
         return self.__column
 
     @column.setter
-    def column(self, x):
-        self.__column = x
+    def column(self, column):
+        self.__column = column
