@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 from abc import ABC, abstractmethod
 from items import *
+
 """Player Class"""
+
 
 class Player(ABC):
     """"""
@@ -15,6 +17,13 @@ class Player(ABC):
         self.gold = gold
         self.inventory = inventory
         self.attack_score = attack_score
+        for team in ["blue", "red"]:
+            if team == "blue":
+                self.__row = self.size
+                self.__column = 0
+            else:
+                self.__row = 0
+                self.__column = self.size
 
     @abstractmethod
     def attack(self): ...
@@ -24,6 +33,12 @@ class Player(ABC):
             raise TypeError("item must be an Item object")
         if item.price > self.gold:
             raise BaseException("Not Enough Gold!!!")
+        if len(self.inventory) >= self.__MAX_ITEMS:
+            raise ValueError("Not enough space in inventory")
+    
+        self.gold = self.gold - item.price
+        self.inventory.append(self.item)
+            
 
     @abstractmethod
     def move(self): ...
@@ -32,6 +47,7 @@ class Player(ABC):
         return self.name[:3].capitalize()
 
     """Name of user/champion"""
+
     @property
     def name(self):
         return self.__name
@@ -41,6 +57,7 @@ class Player(ABC):
         self.__name = name
 
     """Hp of user/champion"""
+
     @property
     def hp(self):
         return self.__hp
@@ -50,6 +67,7 @@ class Player(ABC):
         self.__hp = hp
 
     """Mana of user/champion"""
+
     @property
     def mana(self):
         return self.__mana
@@ -59,6 +77,7 @@ class Player(ABC):
         self.__mana = mana
 
     """Current gold"""
+
     @property
     def gold(self):
         return self.__gold
@@ -72,9 +91,11 @@ class Player(ABC):
         self.__gold = gold
 
     """Inventory status"""
+
     @property
     def inventory(self):
         return self.__inventory
+
     @inventory.setter
     def inventory(self, inventory):
         if not type(list):
@@ -96,3 +117,19 @@ class Player(ABC):
 
     def __str__(self):
         return self.name
+
+    @property
+    def row(self):
+        return self.__row
+
+    @row.setter
+    def row(self, y):
+        self.__row = y
+
+    @property
+    def column(self):
+        return self.__column
+
+    @column.setter
+    def column(self, x):
+        self.__column = x
