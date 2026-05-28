@@ -1,7 +1,8 @@
 #!/usr/bin/python3
+from abc import ABC, abstractmethod
 """Player Class"""
 
-class Player:
+class Player(ABC):
     """"""
 
     __MAX_ITEMS = 6
@@ -34,7 +35,8 @@ class Player:
     def name(self):
         return self.__name
 
-    @name.setter(self, name):
+    @name.setter
+    def name(self, name):
         self.__name = name
 
     """Hp of user/champion"""
@@ -52,7 +54,7 @@ class Player:
         return self.__mana
 
     @mana.setter
-    def mana(self):
+    def mana(self, mana):
         self.__mana = mana
 
     """Current gold"""
@@ -60,7 +62,8 @@ class Player:
     def gold(self):
         return self.__gold
 
-    @gold.setter(self, gold):
+    @gold.setter
+    def gold(self, gold):
         if type(gold) is not int:
             raise TypeError("Gold must be int")
         if gold < 0:
@@ -84,9 +87,10 @@ class Player:
     def attack_score(self):
         return self.__attack_score
 
-    @attack_score.setter(self, attack_score):
+    @attack_score.setter
+    def attack_score(self, attack_score):
         if type(attack_score) is not int:
-            raise TypeError:("Attack score should be an integer")
+            raise TypeError("Attack score should be an integer")
         self.__attack_score = attack_score
 
     def __str__(self):
