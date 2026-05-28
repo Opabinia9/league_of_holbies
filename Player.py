@@ -24,6 +24,12 @@ class Player(ABC):
             raise TypeError("item must be an Item object")
         if item.price > self.gold:
             raise BaseException("Not Enough Gold!!!")
+        if len(self.inventory) >= self.__MAX_ITEMS:
+            raise ValueError("Not enough space in inventory")
+    
+        self.gold = self.gold - item.price
+        self.inventory.append(self.item)
+            
 
     @abstractmethod
     def move(self): ...
