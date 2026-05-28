@@ -22,8 +22,10 @@ class Map:
         self.size = size
         self.__squares = []
         for row in range(self.size):
+            col = []
             for column in range(self.size):
-                self.__squares.append(Square(row, column, self.size))
+                col.append(Square())
+            self.__squares.append(col)
 
     def __del__(self):
         Map.__COUNT = 0
@@ -82,22 +84,28 @@ class Map:
         self.__size = size
 
     def print_map(self):
-        out = ""
+        out, occupied = "", "   "
         border = "|---"
-        space = "|{occupied}"
-        occupied = "   "
-
-        for y in range(self.size):
-            out += border * self.size + "|\n"
-            out += f"{space * self.size}|\n" * 3
-            if y == self.size - 1:
-                out += border * self.size + "|\n"
+        space = f"|   "
+        out += f"-" * (4 * self.size + 1) + "\n"
+        for row in range(self.size):
+            out += "|"
+            for i in range(self.size):
+                out += self.__squares[row][i].top() + "|"
+            out += "\n|"
+            for j in range(self.size):
+                out += self.__squares[row][j].mid() + "|"
+            out += "\n|"
+            for k in range(self.size):
+                out += self.__squares[row][k].bot() + "|"
+            out += "\n"
+            out += f"-" * (4 * self.size + 1) + "\n"
         return out
 
     def launch_game(self):
-        print(self.print_map())
         print(f"welcome to {self.name}")
         while True:
+            print(self.print_map())
             command = input(f"{self.name} >> ")
             args = command.split()
             try:
@@ -106,6 +114,8 @@ class Map:
                         self.__add(*args[1:])
                     case "buy":
                         self.__buy(*args[1:])
+                    case "move":
+                        self.__move(*args[1:])
                     case "help":
                         self.__help()
                     case _:
@@ -129,17 +139,18 @@ class Map:
                 if len(self.red) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = self.size
+                player.row = self.size - 1
                 player.column = 0
                 self.red[player_name] = player
+                self.__squares[player.row][player.column].incoming(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = self.size
-                player.column = 0
+                player.row = 0
+                player.column = self.size - 1
                 self.blue[player_name] = player
-        print("New player added")
+                self.__squares[player.row][player.column].incoming(player)
         print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
     def __buy(self, item_name, player_name):
@@ -148,6 +159,44 @@ class Map:
             raise ValueError(f"Inactive player ({player_name}) cannot buy item")
         item = ItemFactory(item_name)
         player.buy(item)
+
+    def __move(self, direction, player_name):
+        player = self.__get_player(player_name)
+        if player is None:
+            raise ValueError("Player not found")
+
+        current_square = self.__squares[player.row][player.column]
+        target_row = player.row
+        target_column = player.column
+
+        match direction:
+            case "up":
+                target_row -= 1
+            case "down":
+                target_row += 1
+            case "left":
+                target_column -= 1
+            case "right":
+                target_column += 1
+            case _:
+                raise ValueError("Valid directions are: up, down, left and right")
+
+        if (
+            target_row < 0
+            or target_row >= self.size
+            or target_column < 0
+            or target_column >= self.size
+        ):
+            raise ValueError("Player must stay on the map")
+
+        target_square = self.__squares[target_row][target_column]
+        if target_square.is_full():
+            raise ValueError("Target square is full")
+
+        current_square.outgoing(player)
+        target_square.incoming(player)
+        player.row = target_row
+        player.column = target_column
 
     def __get_player(self, player_name):
         if player_name in self.blue:
@@ -158,33 +207,38 @@ class Map:
 
 
 class Square:
-    def __init__(self, row, column, size=4):
-        self.coordinates = [row, column, size]
-
-    @property
-    def size(self):
-        return self.__size
-
-    @size.setter
-    def size(self, size):
+    def __init__(self, size=3):
         self.__size = size
+        self.players = []
 
     @property
-    def row(self):
-        return self.__row
+    def players(self):
+        return self.__players
 
-    @row.setter
-    def row(self, row):
-        if row > self.size:
-            raise ValueError("there is no space for your space!")
-        self.__row = row
+    @players.setter
+    def players(self, players):
+        self.__players = players
 
-    @property
-    def column(self):
-        return self.__column
+    def incoming(self, player):
+        self.players.append(player)
 
-    @column.setter
-    def column(self, column):
-        if column > self.size:
-            raise ValueError("there is no space for your space!")
-        self.__column = column
+    def outgoing(self, player):
+        self.players.remove(player)
+
+    def top(self):
+        if len(self.players) == self.__size:
+            return self.players[self.__size - 1].get_short_name()
+        return f" " * self.__size
+
+    def mid(self):
+        if len(self.players) > 0:
+            return self.players[0].get_short_name()
+        return f" " * self.__size
+
+    def bot(self):
+        if len(self.players) == 2:
+            return self.players[1].get_short_name()
+        return f" " * self.__size
+
+    def is_full(self):
+        return len(self.players) == self.__size
