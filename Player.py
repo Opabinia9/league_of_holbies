@@ -78,7 +78,7 @@ class Player(ABC):
     def inventory(self, inventory):
         if not type(list):
             raise TypeError("Not List")
-        if inventory > MAX_ITEMS:
+        if len(inventory) > MAX_ITEMS:
             raise ValueError("Cannot have more than 6 items at a time")
             """Drop on ground maybe"""
         self.__inventory = inventory
