@@ -61,32 +61,3 @@ class Item(ABC):
 
     def __str__(self):
         return f"This is a {self.name}, attack: {self.attack_bonus}, defense: {self.defense_bonus}, price:{self.price}"
-
-
-class SwordItem(Item):
-    def __init__(self):
-        super().__init__(10, 0, 42, "Seal clubber")
-
-    def use():
-        print(f"Using my Sword")
-
-
-def ItemFactory(item):
-    items = {
-        "Sword": SwordItem,
-        #"Shield": ShieldItem,
-    }
-
-    if not isinstance(item, str):
-        raise TypeError("Item should be a string.")
-
-    if item not in items:
-        raise ValueError("Item not found.")
-    
-    return items[item]()
-
-
-if __name__ == "__main__":
-    sword = ItemFactory("Sword")
-
-    print(sword)

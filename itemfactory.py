@@ -3,8 +3,20 @@ Item = __import__('items').Item
 
 def ItemFactory(item):
     items = {
-        "Sword": SwordItem,
-        #"Shield": ShieldItem,
+        "DoranBlade": DoranBlade,
+        "DoranShield": DoranShield,
+        "DoranBow": DoranBow,
+        "AmplifyTomb": AmplifyTomb,
+        "BFSword": BFSword,
+        "ChainVest": ChainVest,
+        "Pickaxe": Pickaxe,
+        "GuardianAngel": GuardianAngel,
+        "SteelSigil": SteelSigil,
+        "Actualizer": Actualizer,
+        "DivineRapier": DivineRapier,
+        "ArchangelsStaff": ArchangelsStaff,
+        "WarmogsArmor": WarmogsArmor,
+        "Thornmail": Thornmail,
     }
 
     if not isinstance(item, str):
@@ -14,9 +26,3 @@ def ItemFactory(item):
         raise ValueError("Item not found.")
     
     return items[item]()
-
-
-if __name__ == "__main__":
-    sword = ItemFactory("Sword")
-
-    print(sword)
