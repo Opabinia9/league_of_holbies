@@ -1,8 +1,10 @@
+# import curses
 #!/usr/bin/env python3
 
 
 from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
+import curses
 
 
 class Map:
@@ -102,11 +104,26 @@ class Map:
             out += f"-" * (4 * self.size + 1) + "\n"
         return out
 
-    def launch_game(self):
-        print(f"welcome to {self.name}")
+    def launch_game(self, stdscr):
+        # print(f"welcome to {self.name}")
         while True:
-            print(self.print_map())
-            command = input(f"{self.name} >> ")
+            stdscr.clear()
+            stdscr.addstr(self.print_map())
+            chr = ""
+            command = ""
+            px = 1
+            py = 22
+            promt = f"{self.name} >> "
+            stdscr.addstr(py, px, promt)
+            px += len(promt)
+            while chr != "\n":
+                chr = stdscr.getkey(py, px - 1)
+                px += 1
+                stdscr.addstr(chr)
+                if chr == "curses.KEY_BACKSPACE":
+                    command = command[:-1]
+                command = command + chr
+            chr = ""
             args = command.split()
             try:
                 match args[0]:
@@ -121,11 +138,14 @@ class Map:
                     case _:
                         raise ValueError(f"Undefined command: {args[0]}")
             except BaseException as err:
-                print(f"Error: {err}")
+                pass
+        #         print(f"Error: {err}")
+        stdscr.refresh()
 
     def __help(self):
-        print("Available commands:")
-        print("help")
+        ...
+        # print("Available commands:")
+        # print("help")
 
     def __add(self, team, player_name):
         if type(team) is not str:
@@ -151,7 +171,7 @@ class Map:
                 player.column = self.size - 1
                 self.blue[player_name] = player
                 self.__squares[player.row][player.column].incoming(player)
-        print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
+        # print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
     def __buy(self, item_name, player_name):
         player = self.__get_player(player_name)
