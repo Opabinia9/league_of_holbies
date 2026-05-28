@@ -79,7 +79,7 @@ class Player(ABC):
     def inventory(self, inventory):
         if not type(list):
             raise TypeError("Not List")
-        if len(inventory) > MAX_ITEMS:
+        if len(inventory) > self.__MAX_ITEMS:
             raise ValueError("Cannot have more than 6 items at a time")
             """Drop on ground maybe"""
         self.__inventory = inventory
@@ -95,7 +95,4 @@ class Player(ABC):
         self.__attack_score = attack_score
 
     def __str__(self):
-        if self.__hp < 0:
-            return f"{name} has been pwned"
-        if self.__mana < mana: #placeholder, not 100% confident if logic is correct
-            return "Not enough mana"
+        return self.name

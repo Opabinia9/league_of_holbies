@@ -2,10 +2,6 @@
 Player = __import__("Player").Player
 from sub_player import *
 
-"""class SamPlayer(Player):
-    def __init__(self):
-        super().__init__("Sam", 100, 20, 20, 2000, ["gold"], 10)"""
-
 def PlayerFactory(player):
     players = {
         "Yasuo": Yasuo,
@@ -27,7 +23,3 @@ def PlayerFactory(player):
         raise ValueError("player not found")
 
     return players[player]()
-
-if __name__ == "__main__":
-    pudgecharacter = PlayerFactory("Pudge")
-    print(pudgecharacter)
