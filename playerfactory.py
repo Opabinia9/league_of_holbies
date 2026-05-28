@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 Player = __import__("Player").Player
 
-class SamPlayer(Player):
+"""class SamPlayer(Player):
     def __init__(self):
-        super().__init__("Sam", 100, 20, 20, 2000, ["gold"], 10)
+        super().__init__("Sam", 100, 20, 20, 2000, ["gold"], 10)"""
 
 def PlayerFactory(player):
     players = {
@@ -19,6 +19,6 @@ def PlayerFactory(player):
 
     return players[player]()
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     samcharacter = PlayerFactory("Sam")
-    print(samcharacter)
+    print(samcharacter)"""
