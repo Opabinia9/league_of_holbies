@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 Player = __import__("Player").Player
+from sub_player import *
 
 """class SamPlayer(Player):
     def __init__(self):
@@ -7,16 +8,16 @@ Player = __import__("Player").Player
 
 def PlayerFactory(player):
     players = {
-        "Yasuo": Yasuo()
-        "Yurnero": Yurnero()
-        "Ashe": Ashe()
-        "MoghulKhan": MoghulKhan()
-        "Gangplank": Gangplank()
-        "Teemo": Teemo()
-        "Meepo": Meepo()
-        "Pudge": Pudge()
-        "MissFortune": MissFortune()
-        "Barathrum": Barathrum()
+        "Yasuo": Yasuo,
+        "Yurnero": Yurnero,
+        "Ashe": Ashe,
+        "MoghulKhan": MoghulKhan,
+        "Gangplank": Gangplank,
+        "Teemo": Teemo,
+        "Meepo": Meepo,
+        "Pudge": Pudge,
+        "MissFortune": MissFortune,
+        "Barathrum": Barathrum
     }
 
     if not isinstance(player, str):
@@ -27,6 +28,6 @@ def PlayerFactory(player):
 
     return players[player]()
 
-"""if __name__ == "__main__":
-    samcharacter = PlayerFactory("Sam")
-    print(samcharacter)"""
+if __name__ == "__main__":
+    pudgecharacter = PlayerFactory("Pudge")
+    print(pudgecharacter)

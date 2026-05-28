@@ -1,13 +1,13 @@
 #!/usr/bin/python3
 
+from Player import Player
 
-
-class Yasuo(player):
+class Yasuo(Player):
     def __init__(self):
         super().__init__("Yasuo", 800, 0, 600, [], 60)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -15,12 +15,12 @@ class Yasuo(player):
     def get_short_name(self):
         return self.name[:3]
 
-class Yurnero(player):
+class Yurnero(Player):
     def __init__(self):
         super().__init__("Yurnero", 800, 200, 600, [], 60)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -28,12 +28,12 @@ class Yurnero(player):
     def get_short_name(self):
         return self.name[:3]
 
-class Ashe(player):
+class Ashe(Player):
     def __init__(self):
         super().__init__("Ashe", 800, 0, 600, [], 60)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -41,12 +41,12 @@ class Ashe(player):
     def get_short_name(self):
         return self.name[:3]
 
-class MoghulKhan(player):
+class MoghulKhan(Player):
     def __init__(self):
         super().__init__("Moghul Khan", 1200, 400, 600, [], 40)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -54,12 +54,12 @@ class MoghulKhan(player):
     def get_short_name(self):
         return self.name[:3]
 
-class Gangplank(player):
+class Gangplank(Player):
     def __init__(self):
         super().__init__("Gangplank", 900, 600, 600, [], 40)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -67,24 +67,24 @@ class Gangplank(player):
     def get_short_name(self):
         return self.name[:3]
 
-class Teemo(player):
+class Teemo(Player):
     def __init__(self):
         super().__init__("Teemo", 500, 600, 600, [], 40)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
 
     def get_short_name(self):
         return self.name[:3]
-class Meepo(player):
+class Meepo(Player):
     def __init__(self):
         super().__init__("Meepo", 1200, 0, 600, [], 40)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -92,12 +92,12 @@ class Meepo(player):
     def get_short_name(self):
         return self.name[:3]
 
-class Pudge(player):
+class Pudge(Player):
     def __init__(self):
         super().__init__("Pudge", 1200, 124, 600, [], 80)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("Beware of my hook")
@@ -105,12 +105,12 @@ class Pudge(player):
     def get_short_name(self):
         return self.name[:3]
 
-class MissFortune(player):
+class MissFortune(Player):
     def __init__(self):
         super().__init__("Miss Fortune", 1200, 0, 600, [], 40)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("move")
@@ -118,12 +118,12 @@ class MissFortune(player):
     def get_short_name(self):
         return self.name[:3]
 
-class Barathrum(player):
+class Barathrum(Player):
     def __init__(self):
         super().__init__("Barathrum", 1200, 0, 600, [], 40)
 
-    def attack(self, item.name):
-        print(f"{self.name} is attacking with {item.name}")
+    def attack(self):
+        print(f"{self.name} is attacking with")
 
     def move(self):
         print("17%")
