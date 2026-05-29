@@ -5,6 +5,7 @@
 from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
 import curses
+import time
 
 
 class Map:
@@ -109,21 +110,10 @@ class Map:
         while True:
             stdscr.clear()
             stdscr.addstr(self.print_map())
-            chr = ""
-            command = ""
             px = 1
             py = 22
-            promt = f"{self.name} >> "
-            stdscr.addstr(py, px, promt)
-            px += len(promt)
-            while chr != "\n":
-                chr = stdscr.getkey(py, px - 1)
-                px += 1
-                stdscr.addstr(chr)
-                if chr == "curses.KEY_BACKSPACE":
-                    command = command[:-1]
-                command = command + chr
-            chr = ""
+            command = self.__prompt(py, px, f"{self.name} >> ", stdscr)
+            time.sleep(5)
             args = command.split()
             try:
                 match args[0]:
@@ -224,6 +214,59 @@ class Map:
         if player_name in self.red:
             return self.red[player_name]
         return None
+
+    def __prompt(self, p_y, p_x, prompt, stdscr):
+        chr = ""
+        left = ""
+        command = ""
+        stdscr.addstr(p_y, p_x, prompt)
+        p_x += len(prompt)
+        type_limit = p_x
+        while chr != "\n":
+            chr = stdscr.getkey(p_y, p_x - 1)
+            while chr in ["KEY_RIGHT", "KEY_LEFT", "KEY_UP", "KEY_BACKSPACE"]:
+                if chr == "KEY_RIGHT":
+                    while chr == "KEY_RIGHT":
+                        if left != "":
+                            command = command + left[:1]
+                            left = left[1:]
+                            p_x += 1
+                        chr = stdscr.getkey(p_y, p_x - 1)
+                if chr == "KEY_LEFT":
+                    while chr == "KEY_LEFT":
+                        if p_x > type_limit:
+                            left = command[-1:] + left
+                            command = command[:-1]
+                            p_x -= 1
+                        chr = stdscr.getkey(p_y, p_x - 1)
+                if chr == "KEY_UP":
+                    while chr == "KEY_UP":
+                        chr = stdscr.getkey(p_y, p_x - 1)
+                if chr == "KEY_BACKSPACE":
+                    while chr == "KEY_BACKSPACE":
+                        if p_x > type_limit:
+                            command = command[:-1]
+                            p_x -= 1
+                            if left != "":
+                                stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
+                                stdscr.addstr(p_y, p_x - 1, left)
+                            else:
+                                stdscr.addstr(p_y, p_x - 1, " ")
+                        chr = stdscr.getkey(p_y, p_x - 1)
+            p_x += 1
+            if chr != "\n":
+                if left != "":
+                    stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
+                    stdscr.addstr(p_y, p_x - 1, left)
+                stdscr.addstr(p_y, p_x - 2, chr)
+            command = command + chr
+        if left != "":
+            command = command[:-1]
+            command = command + left
+            command += "\n"
+        stdscr.addstr(p_y + 1, 1, command)
+        stdscr.refresh()
+        return command
 
 
 class Square:
