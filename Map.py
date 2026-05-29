@@ -2,12 +2,11 @@
 """Module: Map."""
 
 import Player
+import sub_player
 from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
 import curses
 import time
-
-import sub_player
 
 
 class Map:
@@ -104,13 +103,13 @@ class Map:
         stdscr.addstr(current_y, x + 4, "Blue Team:")
         current_y += 1
         for summoner in self.blue:
-            player = self.__get_player(summoner)
+            player = self.blue[summoner]
             stdscr.addstr(current_y, x + 8, f"{summoner}: HP: {player.hp}")
             current_y += 1
         stdscr.addstr(current_y, x + 4, "Red Team:")
         current_y += 1
         for summoner in self.red:
-            player = self.__get_player(summoner)
+            player = self.red[summoner]
             stdscr.addstr(current_y, x + 8, f"{summoner}: HP: {player.hp}")
             current_y += 1
         stdscr.addstr(current_y, x, border)
