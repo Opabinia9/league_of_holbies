@@ -10,13 +10,25 @@ class Player(ABC):
 
     __MAX_ITEMS = 6
 
-    def __init__(self, name, hp, mana, gold, inventory, attack_score, row=0, column=0):
+    def __init__(
+        self,
+        name,
+        hp,
+        mana,
+        gold,
+        inventory,
+        attack_score,
+        attack_range=1,
+        row=0,
+        column=0,
+    ):
         self.name = name
         self.hp = hp
         self.mana = mana
         self.gold = gold
         self.inventory = inventory
         self.attack_score = attack_score
+        self.attack_range = attack_range
         self.row = row
         self.column = column
 
@@ -38,7 +50,7 @@ class Player(ABC):
     def move(self): ...
 
     def get_short_name(self):
-        return self.name[:3].capitalize()
+        return self.name[: Square().size].capitalize()
 
     """Name of user/champion"""
 
@@ -108,6 +120,18 @@ class Player(ABC):
         if type(attack_score) is not int:
             raise TypeError("Attack score should be an integer")
         self.__attack_score = attack_score
+
+    @property
+    def attack_range(self):
+        return self.__attack_range
+
+    @attack_range.setter
+    def attack_range(self, attack_range):
+        if type(attack_range) is not int:
+            raise TypeError("Attack range should be an integer")
+        if attack_range < 1:
+            raise ValueError("Attack range should be at least 1")
+        self.__attack_range = attack_range
 
     def __str__(self):
         return self.name
