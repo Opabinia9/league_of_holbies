@@ -106,19 +106,21 @@ class Map:
         return out
 
     def launch_game(self, stdscr):
+        self.__screen_size(stdscr)
         while True:
-            # stdscr.clear()
+            # stdscr.clear() # This is commented out so it doesnt clear prompt outputs
             stdscr.addstr(0, 0, f"welcome to {self.name}\n")
             stdscr.addstr(1, 0, self.print_map())
-            px = 1
+            # TODO: Set Gen py dinamicaly based on map, px is fine at 0
+            px = 0
             py = 22
             command = self.__prompt(py, px, f"{self.name} >> ", stdscr)
-            time.sleep(1)
+            time.sleep(1)  # Only For testing Purposes
             args = command.split()
             try:
                 match args[0]:
                     case "add":
-                        self.__add(*args[1:])
+                        self.__add(*args[1:], stdscr=stdscr)
                     case "buy":
                         self.__buy(*args[1:])
                     case "move":
@@ -132,11 +134,12 @@ class Map:
                 stdscr.refresh()
 
     def __help(self, stdscr, p_y, p_x):
+        # TODO: Update to match valid commands
         stdscr.addstr(p_y, p_x, "Available commands:\n")
         stdscr.addstr(p_y + 1, p_x, "help\n")
         stdscr.refresh()
 
-    def __add(self, team, player_name):
+    def __add(self, team, player_name, stdscr):
         if type(team) is not str:
             raise TypeError("Team should be a string")
         if team not in self.__ALLOWED_TEAMS:
@@ -160,7 +163,8 @@ class Map:
                 player.column = self.size - 1
                 self.blue[player_name] = player
                 self.__squares[player.row][player.column].incoming(player)
-        # print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
+        # TODO: add px, py for better control and reliablity
+        stdscr.addstr(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
     def __buy(self, item_name, player_name):
         player = self.__get_player(player_name)
@@ -239,8 +243,12 @@ class Map:
                             command = command[:-1]
                             p_x -= 1
                         chr = stdscr.getkey(p_y, p_x - 1)
+                # TODO: Add coomand History
                 if chr == "KEY_UP":
                     while chr == "KEY_UP":
+                        chr = stdscr.getkey(p_y, p_x - 1)
+                if chr == "KEY_DOWN":
+                    while chr == "KEY_DOWN":
                         chr = stdscr.getkey(p_y, p_x - 1)
                 if chr == "KEY_BACKSPACE":
                     while chr == "KEY_BACKSPACE":
@@ -261,13 +269,14 @@ class Map:
                                 stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
                                 stdscr.addstr(p_y, p_x - 1, left)
                         chr = stdscr.getkey(p_y, p_x - 1)
-            p_x += 1
-            if chr != "\n":
-                if left != "":
-                    stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
-                    stdscr.addstr(p_y, p_x - 1, left)
-                stdscr.addstr(p_y, p_x - 2, chr)
-            command = command + chr
+            if p_x < ((curses.COLS) - 1):
+                p_x += 1
+                if chr != "\n":
+                    if left != "":
+                        stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
+                        stdscr.addstr(p_y, p_x - 1, left)
+                    stdscr.addstr(p_y, p_x - 2, chr)
+                command = command + chr
         if left != "":
             command = command[:-1]
             command = command + left
@@ -275,6 +284,16 @@ class Map:
         stdscr.addstr(p_y, p_x, "\n")
         stdscr.refresh()
         return command
+
+    def __screen_size(self, stdscr):
+        min_width = 21
+        min_hight = 27
+        while curses.LINES < min_hight or curses.COLS < min_width:
+            stdscr.clear()
+            curses.update_lines_cols()
+            stdscr.addstr(0, 0, f"Min size is {min_hight}px x {min_width}px")
+            stdscr.addstr(1, 0, f"Current Size is {curses.LINES}px x {curses.COLS}px")
+            stdscr.refresh()
 
 
 class Square:
