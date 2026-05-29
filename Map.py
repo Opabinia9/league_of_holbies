@@ -33,8 +33,12 @@ class Map:
         self.name = name
         if blue is not None:
             self.blue = blue
+        else:
+            self.blue = {}
         if red is not None:
             self.red = red
+        else:
+            self.red = {}
         self.size = size
         self.squares = []
         for _row in range(self.size):
