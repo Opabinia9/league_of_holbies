@@ -335,7 +335,7 @@ class Map:
     def red(self, players: dict) -> None:
         if not isinstance(players, dict):
             raise TypeError("Players Must be a Dictionary.")
-        self.__red = {}
+        self.__red = players
 
     @property
     def blue(self) -> dict:
@@ -346,7 +346,7 @@ class Map:
     def blue(self, players: dict) -> None:
         if not isinstance(players, dict):
             raise TypeError("Players Must be a Dictionary.")
-        self.__blue = {}
+        self.__blue = players
 
 
 class Square:
