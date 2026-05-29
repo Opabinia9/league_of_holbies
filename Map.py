@@ -36,12 +36,12 @@ class Map:
         if red is not None:
             self.red = red
         self.size = size
-        self.__squares = []
+        self.squares = []
         for _row in range(self.size):
             col = []
             for _column in range(self.size):
                 col.append(Square())
-            self.__squares.append(col)
+            self.squares.append(col)
 
     def __del__(self) -> None:
         """"""
@@ -108,7 +108,7 @@ class Map:
     def print_map(self, stdscr: curses.window) -> tuple:
         """"""
         map_x, map_y = 0, 0
-        for y, row in enumerate(self.__squares):
+        for y, row in enumerate(self.squares):
             for x, square in enumerate(row):
                 square.render(y, x, stdscr)
         map_x = self.size * (Square().size + 2)
@@ -169,7 +169,7 @@ class Map:
                 player.row = self.size - 1
                 player.column = 0
                 self.red[player_name] = player
-                self.__squares[player.row][player.column].incoming(player)
+                self.squares[player.row][player.column].incoming(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
@@ -177,7 +177,7 @@ class Map:
                 player.row = 0
                 player.column = self.size - 1
                 self.blue[player_name] = player
-                self.__squares[player.row][player.column].incoming(player)
+                self.squares[player.row][player.column].incoming(player)
         # TODO: add px, py for better control and reliablity
         stdscr.addstr(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
@@ -209,7 +209,7 @@ class Map:
         if player is None:
             raise ValueError("Player not found")
 
-        current_square = self.__squares[player.row][player.column]
+        current_square = self.squares[player.row][player.column]
         target_row = player.row
         target_column = player.column
 
@@ -233,7 +233,7 @@ class Map:
         ):
             raise ValueError("Player must stay on the map")
 
-        target_square = self.__squares[target_row][target_column]
+        target_square = self.squares[target_row][target_column]
         if target_square.is_full():
             raise ValueError("Target square is full")
 
@@ -327,15 +327,6 @@ class Map:
             stdscr.refresh()
 
     @property
-    def name(self) -> str:
-        """"""
-        return self.__name
-
-    @name.setter
-    def name(self, name: str) -> None:
-        self.__name = name
-
-    @property
     def red(self) -> dict:
         """"""
         return self.__red
@@ -356,20 +347,6 @@ class Map:
         if not isinstance(players, dict):
             raise TypeError("Players Must be a Dictionary.")
         self.__blue = {}
-
-    @property
-    def squares(self) -> list:
-        """"""
-        return self.__squares
-
-    @property
-    def size(self) -> int:
-        """"""
-        return self.__size
-
-    @size.setter
-    def size(self, size: int) -> None:
-        self.__size = size
 
 
 class Square:
