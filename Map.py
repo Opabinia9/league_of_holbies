@@ -106,14 +106,14 @@ class Map:
         return out
 
     def launch_game(self, stdscr):
-        # print(f"welcome to {self.name}")
         while True:
-            stdscr.clear()
-            stdscr.addstr(self.print_map())
+            # stdscr.clear()
+            stdscr.addstr(0, 0, f"welcome to {self.name}\n")
+            stdscr.addstr(1, 0, self.print_map())
             px = 1
             py = 22
             command = self.__prompt(py, px, f"{self.name} >> ", stdscr)
-            time.sleep(5)
+            time.sleep(1)
             args = command.split()
             try:
                 match args[0]:
@@ -124,18 +124,17 @@ class Map:
                     case "move":
                         self.__move(*args[1:])
                     case "help":
-                        self.__help()
+                        self.__help(stdscr, py + 1, px)
                     case _:
                         raise ValueError(f"Undefined command: {args[0]}")
             except BaseException as err:
-                pass
-        #         print(f"Error: {err}")
-        stdscr.refresh()
+                stdscr.addstr(py + 1, px, f"Error: {err}\n")
+                stdscr.refresh()
 
-    def __help(self):
-        ...
-        # print("Available commands:")
-        # print("help")
+    def __help(self, stdscr, p_y, p_x):
+        stdscr.addstr(p_y, p_x, "Available commands:\n")
+        stdscr.addstr(p_y + 1, p_x, "help\n")
+        stdscr.refresh()
 
     def __add(self, team, player_name):
         if type(team) is not str:
@@ -219,6 +218,7 @@ class Map:
         chr = ""
         left = ""
         command = ""
+        stdscr.addstr(p_y, p_x, (" " * curses.LINES))
         stdscr.addstr(p_y, p_x, prompt)
         p_x += len(prompt)
         type_limit = p_x
@@ -264,7 +264,7 @@ class Map:
             command = command[:-1]
             command = command + left
             command += "\n"
-        stdscr.addstr(p_y + 1, 1, command)
+        stdscr.addstr(p_y, p_x, "\n")
         stdscr.refresh()
         return command
 
