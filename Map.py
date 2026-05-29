@@ -253,6 +253,14 @@ class Map:
                             else:
                                 stdscr.addstr(p_y, p_x - 1, " ")
                         chr = stdscr.getkey(p_y, p_x - 1)
+                if chr == "KEY_DC":
+                    while chr == "KEY_DC":
+                        if left != "":
+                            left = left[1:]
+                            if left != "":
+                                stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
+                                stdscr.addstr(p_y, p_x - 1, left)
+                        chr = stdscr.getkey(p_y, p_x - 1)
             p_x += 1
             if chr != "\n":
                 if left != "":
