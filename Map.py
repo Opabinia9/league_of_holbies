@@ -2,7 +2,6 @@
 """Module: Map."""
 
 import Player
-import sub_player
 from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
 import curses
@@ -48,37 +47,6 @@ class Map:
         """"""
         Map.__COUNT = 0
 
-    @property
-    def name(self) -> str:
-        """"""
-        return self.__name
-
-    @name.setter
-    def name(self, name: str) -> None:
-        self.__name = name
-
-    @property
-    def red(self) -> dict:
-        """"""
-        return self.__red
-
-    @red.setter
-    def red(self, players: dict) -> None:
-        if not isinstance(players, dict):
-            raise TypeError("Players Must be a Dictionary.")
-        self.__red = {}
-
-    @property
-    def blue(self) -> dict:
-        """"""
-        return self.__blue
-
-    @blue.setter
-    def blue(self, players: dict) -> None:
-        if not isinstance(players, dict):
-            raise TypeError("Players Must be a Dictionary.")
-        self.__blue = {}
-
     # def __str__(self):
     #     map_name = f"Map Name: {self.name}"
     #     border = f"*" * len(map_name)
@@ -117,20 +85,6 @@ class Map:
         height = current_y - y + 1
 
         return width, height
-
-    @property
-    def squares(self) -> list:
-        """"""
-        return self.__squares
-
-    @property
-    def size(self) -> int:
-        """"""
-        return self.__size
-
-    @size.setter
-    def size(self, size: int) -> None:
-        self.__size = size
 
     # def print_map(self):
     #     out, occupied = "", "   "
@@ -371,6 +325,51 @@ class Map:
             stdscr.addstr(0, 0, f"Min size is {min_hight}px x {min_width}px")
             stdscr.addstr(1, 0, f"Current Size is {curses.LINES}px x {curses.COLS}px")
             stdscr.refresh()
+
+    @property
+    def name(self) -> str:
+        """"""
+        return self.__name
+
+    @name.setter
+    def name(self, name: str) -> None:
+        self.__name = name
+
+    @property
+    def red(self) -> dict:
+        """"""
+        return self.__red
+
+    @red.setter
+    def red(self, players: dict) -> None:
+        if not isinstance(players, dict):
+            raise TypeError("Players Must be a Dictionary.")
+        self.__red = {}
+
+    @property
+    def blue(self) -> dict:
+        """"""
+        return self.__blue
+
+    @blue.setter
+    def blue(self, players: dict) -> None:
+        if not isinstance(players, dict):
+            raise TypeError("Players Must be a Dictionary.")
+        self.__blue = {}
+
+    @property
+    def squares(self) -> list:
+        """"""
+        return self.__squares
+
+    @property
+    def size(self) -> int:
+        """"""
+        return self.__size
+
+    @size.setter
+    def size(self, size: int) -> None:
+        self.__size = size
 
 
 class Square:
