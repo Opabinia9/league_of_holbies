@@ -2,9 +2,10 @@
 
 from Player import Player
 
+
 class Yasuo(Player):
     def __init__(self):
-        super().__init__("Yasuo", 800, 0, 600, [], 60)
+        super().__init__("Yasuo", 800, 0, 600, [], 100)
 
     def attack(self):
         print(f"{self.name} is attacking with")
@@ -14,6 +15,7 @@ class Yasuo(Player):
 
     def get_short_name(self):
         return self.name[:3]
+
 
 class Yurnero(Player):
     def __init__(self):
@@ -28,9 +30,10 @@ class Yurnero(Player):
     def get_short_name(self):
         return self.name[:3]
 
+
 class Ashe(Player):
     def __init__(self):
-        super().__init__("Ashe", 800, 0, 600, [], 60)
+        super().__init__("Ashe", 200, 0, 600, [], 60)
 
     def attack(self):
         print(f"{self.name} is attacking with")
@@ -40,6 +43,7 @@ class Ashe(Player):
 
     def get_short_name(self):
         return self.name[:3]
+
 
 class MoghulKhan(Player):
     def __init__(self):
@@ -54,6 +58,7 @@ class MoghulKhan(Player):
     def get_short_name(self):
         return self.name[:3]
 
+
 class Gangplank(Player):
     def __init__(self):
         super().__init__("Gangplank", 900, 600, 600, [], 40)
@@ -67,6 +72,7 @@ class Gangplank(Player):
     def get_short_name(self):
         return self.name[:3]
 
+
 class Teemo(Player):
     def __init__(self):
         super().__init__("Teemo", 500, 600, 600, [], 40)
@@ -79,6 +85,8 @@ class Teemo(Player):
 
     def get_short_name(self):
         return self.name[:3]
+
+
 class Meepo(Player):
     def __init__(self):
         super().__init__("Meepo", 1200, 0, 600, [], 40)
@@ -91,6 +99,7 @@ class Meepo(Player):
 
     def get_short_name(self):
         return self.name[:3]
+
 
 class Pudge(Player):
     def __init__(self):
@@ -105,6 +114,7 @@ class Pudge(Player):
     def get_short_name(self):
         return self.name[:3]
 
+
 class MissFortune(Player):
     def __init__(self):
         super().__init__("Miss Fortune", 1200, 0, 600, [], 40)
@@ -118,6 +128,7 @@ class MissFortune(Player):
     def get_short_name(self):
         return self.name[:3]
 
+
 class Barathrum(Player):
     def __init__(self):
         super().__init__("Barathrum", 1200, 0, 600, [], 40)
@@ -130,4 +141,3 @@ class Barathrum(Player):
 
     def get_short_name(self):
         return self.name[:3]
-
