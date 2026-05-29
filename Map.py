@@ -1,19 +1,34 @@
-# import curses
 #!/usr/bin/env python3
+"""Module: Map."""
 
-
+import Player
 from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
 import curses
 import time
 
+import sub_player
+
 
 class Map:
+    """Class: Map.
+
+    Map class for LOH game, contains main runner for game and
+    contoles screen output and input
+    """
+
     __COUNT = 0
     __ALLOWED_TEAMS = ("blue", "red")
     __PLAYER_PER_TEAM = 2
 
-    def __init__(self, name, blue={}, red={}, size=8):
+    def __init__(
+        self,
+        name: str,
+        blue: dict | None = None,
+        red: dict | None = None,
+        size: int = 8,
+    ) -> None:
+        """"""
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
         Map.__COUNT += 1
@@ -24,39 +39,43 @@ class Map:
             self.red = red
         self.size = size
         self.__squares = []
-        for row in range(self.size):
+        for _row in range(self.size):
             col = []
-            for column in range(self.size):
+            for _column in range(self.size):
                 col.append(Square())
             self.__squares.append(col)
 
-    def __del__(self):
+    def __del__(self) -> None:
+        """"""
         Map.__COUNT = 0
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """"""
         return self.__name
 
     @name.setter
-    def name(self, name):
+    def name(self, name: str) -> None:
         self.__name = name
 
     @property
-    def red(self):
+    def red(self) -> dict:
+        """"""
         return self.__red
 
     @red.setter
-    def red(self, players):
+    def red(self, players: dict) -> None:
         if not isinstance(players, dict):
             raise TypeError("Players Must be a Dictionary.")
         self.__red = {}
 
     @property
-    def blue(self):
+    def blue(self) -> dict:
+        """"""
         return self.__blue
 
     @blue.setter
-    def blue(self, players):
+    def blue(self, players: dict) -> None:
         if not isinstance(players, dict):
             raise TypeError("Players Must be a Dictionary.")
         self.__blue = {}
@@ -74,7 +93,8 @@ class Map:
     #     str += border + "\n"
     #     return str
 
-    def render_dash(self, y, x, stdscr):
+    def render_dash(self, y: int, x: int, stdscr: curses.window) -> tuple:
+        """"""
         map_name = f"{self.name}"
         border = "*" * len(map_name)
         stdscr.addstr(y, x, border)
@@ -100,15 +120,17 @@ class Map:
         return width, height
 
     @property
-    def squares(self):
+    def squares(self) -> list:
+        """"""
         return self.__squares
 
     @property
-    def size(self):
+    def size(self) -> int:
+        """"""
         return self.__size
 
     @size.setter
-    def size(self, size):
+    def size(self, size: int) -> None:
         self.__size = size
 
     # def print_map(self):
@@ -130,7 +152,8 @@ class Map:
     #         out += f"-" * (4 * self.size + 1) + "\n"
     #     return out
 
-    def print_map(self, stdscr):
+    def print_map(self, stdscr: curses.window) -> tuple:
+        """"""
         map_x, map_y = 0, 0
         for y, row in enumerate(self.__squares):
             for x, square in enumerate(row):
@@ -139,7 +162,8 @@ class Map:
         map_y = self.size * (Square().size + 2)
         return map_x, map_y
 
-    def launch_game(self, stdscr):
+    def launch_game(self, stdscr: curses.window) -> None:
+        """"""
         self.__screen_size(stdscr)
         while True:
             # stdscr.clear() # This is commented out so it doesnt clear prompt outputs
@@ -171,13 +195,13 @@ class Map:
                 stdscr.addstr(py + 1, px, f"Error: {err}\n")
                 stdscr.refresh()
 
-    def __help(self, stdscr, p_y, p_x):
+    def __help(self, stdscr: curses.window, p_y: int, p_x: int) -> None:
         # TODO: Update to match valid commands
         stdscr.addstr(p_y, p_x, "Available commands:\n")
         stdscr.addstr(p_y + 1, p_x, "help\n")
         stdscr.refresh()
 
-    def __add(self, team, player_name, stdscr):
+    def __add(self, team: str, player_name: str, stdscr: curses.window) -> None:
         if type(team) is not str:
             raise TypeError("Team should be a string")
         if team not in self.__ALLOWED_TEAMS:
@@ -204,14 +228,14 @@ class Map:
         # TODO: add px, py for better control and reliablity
         stdscr.addstr(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
 
-    def __buy(self, item_name, player_name):
+    def __buy(self, item_name: str, player_name: str) -> None:
         player = self.__get_player(player_name)
         if player is None:
             raise ValueError(f"Inactive player ({player_name}) cannot buy item")
         item = ItemFactory(item_name)
         player.buy(item)
 
-    def __attack(self, from_plyr, to_plyr):
+    def __attack(self, from_plyr: str, to_plyr: str) -> None:
         attacker = self.__get_player(from_plyr)
         defender = self.__get_player(to_plyr)
         distance = (
@@ -223,7 +247,7 @@ class Map:
         else:
             defender.hp -= attacker.attack_score
 
-    def __move(self, direction, player_name):
+    def __move(self, direction: str, player_name: str) -> None:
         player = self.__get_player(player_name)
         if player is None:
             raise ValueError("Player not found")
@@ -261,14 +285,14 @@ class Map:
         player.row = target_row
         player.column = target_column
 
-    def __get_player(self, player_name):
+    def __get_player(self, player_name: str) -> Player.Player | None:
         if player_name in self.blue:
             return self.blue[player_name]
         if player_name in self.red:
             return self.red[player_name]
         return None
 
-    def __prompt(self, p_y, p_x, prompt, stdscr):
+    def __prompt(self, p_y: int, p_x: int, prompt: str, stdscr: curses.window) -> str:
         chr = ""
         left = ""
         command = ""
@@ -335,7 +359,7 @@ class Map:
         stdscr.refresh()
         return command
 
-    def __screen_size(self, stdscr):
+    def __screen_size(self, stdscr: curses.window) -> None:
         min_width = 21
         min_hight = 27
         while curses.LINES < min_hight or curses.COLS < min_width:
@@ -347,47 +371,56 @@ class Map:
 
 
 class Square:
-    def __init__(self, size=4):
+    """"""
+
+    def __init__(self, size: int = 4) -> None:
+        """"""
         self.__size = size
         self.players = []
 
     @property
-    def size(self):
+    def size(self) -> int:
+        """"""
         return self.__size
 
     @property
-    def players(self):
+    def players(self) -> list:
+        """"""
         return self.__players
 
     @players.setter
-    def players(self, players):
+    def players(self, players: list) -> None:
         self.__players = players
 
-    def incoming(self, player):
+    def incoming(self, player: Player.Player) -> None:
+        """"""
         self.players.append(player)
 
-    def outgoing(self, player):
+    def outgoing(self, player: Player.Player) -> None:
+        """"""
         self.players.remove(player)
 
-    def render(self, y, x, stdscr):
+    def render(self, y: int, x: int, stdscr: curses.window) -> tuple:
+        """"""
         square_y = y * (self.__size + 1)
         square_x = x * (self.__size + 1)
-        stdscr.addstr(square_y, square_x, f"-" * (self.__size + 2))
+        stdscr.addstr(square_y, square_x, "-" * (self.__size + 2))
         for i in range(1, self.__size + 1):
             player = self.players[i - 1] if i - 1 < len(self.players) else None
             stdscr.addstr(
                 square_y + i,
                 square_x,
-                f"|"
+                "|"
                 + (
-                    f" " * self.__size
+                    " " * self.__size
                     if player is None
                     else f"{player.get_short_name():^{self.size}}"[0 : self.size]
                 )
-                + f"|",
+                + "|",
             )
-        stdscr.addstr(square_y + self.__size + 1, square_x, f"-" * (self.__size + 2))
+        stdscr.addstr(square_y + self.__size + 1, square_x, "-" * (self.__size + 2))
         return self.size + 2, self.size + 2
 
-    def is_full(self):
+    def is_full(self) -> bool:
+        """"""
         return len(self.players) == self.__size
