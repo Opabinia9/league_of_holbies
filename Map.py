@@ -236,7 +236,11 @@ class Map:
 
     def __attack(self, from_plyr: str, to_plyr: str) -> None:
         attacker = self.__get_player(from_plyr)
+        if attacker is None:
+            raise ValueError(f"{from_plyr} is not selected")
         defender = self.__get_player(to_plyr)
+        if defender is None:
+            raise ValueError(f"{to_plyr} is not selected")
         distance = (
             (defender.row - attacker.row) ** 2
             + (defender.column - attacker.column) ** 2
