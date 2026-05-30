@@ -12,7 +12,7 @@ class Map:
     """Class: Map.
 
     Map class for LOH game, contains main runner for game and
-    contoles screen output and input
+    consoles screen output and input
     """
 
     __COUNT = 0
@@ -66,28 +66,35 @@ class Map:
 
     def render_dash(self, y: int, x: int, stdscr: curses.window) -> tuple:
         """"""
+        max_y, max_x = stdscr.getmaxyx()
         map_name = f"{self.name}"
-        border = "*" * len(map_name)
+        border = "*" * (max_x - x - 9)
         stdscr.addstr(y, x, border)
+        current_x = x + 4
         current_y = y + 1
-        stdscr.addstr(current_y, x, map_name)
-        current_y += 1
-        stdscr.addstr(current_y, x + 4, "Blue Team:")
-        current_y += 1
-        for summoner in self.blue:
-            player = self.blue[summoner]
-            stdscr.addstr(current_y, x + 8, f"{summoner}: HP: {player.hp}")
+        stdscr.addstr(current_y, current_x, map_name)
+        current_y += 2
+        current_x += 4
+        for team in self.__ALLOWED_TEAMS:
+            stdscr.addstr(current_y, current_x, f"{team} Team:")
             current_y += 1
-        stdscr.addstr(current_y, x + 4, "Red Team:")
+            team_dict = getattr(self, team)
+            for summoner in team_dict:
+                player = team_dict[summoner]
+                stdscr.addstr(current_y, current_x + 8, f"{summoner}: HP: {player.hp}")
+                current_y += 1
+        # stdscr.addstr(current_y, x + 4, "Red Team:")
         current_y += 1
-        for summoner in self.red:
-            player = self.red[summoner]
-            stdscr.addstr(current_y, x + 8, f"{summoner}: HP: {player.hp}")
-            current_y += 1
+        # for summoner in self.red:
+        #     player = self.red[summoner]
+        #     stdscr.addstr(current_y, x + 8, f"{summoner}: HP: {player.hp}")
+        #     current_y += 1
         stdscr.addstr(current_y, x, border)
         width = len(border)
         height = current_y - y + 1
-
+        for i in range(height):
+            stdscr.addstr(y + i, x, "*")
+            stdscr.addstr(y + i, max_x - 9, "*")
         return width, height
 
     # def print_map(self):
@@ -115,23 +122,21 @@ class Map:
         for y, row in enumerate(self.squares):
             for x, square in enumerate(row):
                 square.render(y, x, stdscr)
-        map_x = self.size * (Square().size + 2)
-        map_y = self.size * (Square().size + 2)
+        map_x = self.size * (Square().size + 1) + 5
+        map_y = self.size * (Square().size + 1) + 1
         return map_x, map_y
 
     def launch_game(self, stdscr: curses.window) -> None:
         """"""
         self.__screen_size(stdscr)
         while True:
-            # stdscr.clear() # This is commented out so it doesnt clear prompt outputs
+            stdscr.clear()  # This is commented out so it doesnt clear prompt outputs
             #           stdscr.addstr(self.print_map())
             map_x, map_y = self.print_map(stdscr)
-            px = 1
-            py = map_y + 1
-            dash_x = map_x + 4
+            dash_x = map_x
             dash_y = 1
-            self.render_dash(dash_y, dash_x, stdscr)
-            command = self.__prompt(py, px, f"{self.name} >> ", stdscr)
+            xdelta, ydelta = self.render_dash(dash_y, dash_x, stdscr)
+            command = self.__prompt(dash_y + ydelta, dash_x, f"{self.name} >> ", stdscr)
             time.sleep(1)  # Only For testing Purposes
             args = command.split()
             try:
@@ -356,7 +361,7 @@ class Map:
 class Square:
     """"""
 
-    def __init__(self, size: int = 4) -> None:
+    def __init__(self, size: int = 6) -> None:
         """"""
         self.__size = size
         self.players = []
