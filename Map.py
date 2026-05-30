@@ -72,12 +72,7 @@ class Map:
                 player = team_dict[summoner]
                 stdscr.addstr(current_y, current_x + 8, f"{summoner}: HP: {player.hp}")
                 current_y += 1
-        # stdscr.addstr(current_y, x + 4, "Red Team:")
         current_y += 1
-        # for summoner in self.red:
-        #     player = self.red[summoner]
-        #     stdscr.addstr(current_y, x + 8, f"{summoner}: HP: {player.hp}")
-        #     current_y += 1
         stdscr.addstr(current_y, x, border)
         width = len(border)
         height = current_y - y + 1
@@ -99,6 +94,7 @@ class Map:
     def launch_game(self) -> None:
         """"""
         self.__screen_size(self.stdscr)
+        map_win, dash_win, prompt_win = self.__setup_pads(*self.__get_win_sizes())
         while True:
             self.stdscr.clear()  # This is commented out so it doesnt clear prompt outputs
             map_x, map_y = self.print_map(self.stdscr)
@@ -297,14 +293,65 @@ class Map:
         return command
 
     def __screen_size(self, stdscr: curses.window) -> None:
-        min_width = 21
-        min_hight = 27
-        while curses.LINES < min_hight or curses.COLS < min_width:
+        w1, h1, w2, h2, w3, h3 = self.__get_win_sizes()
+        min_width = w1 + (w2 if w2 > w3 else w3)
+        min_height = h1 if h1 > (h2 + h3) else (h2 + h3)
+        while curses.LINES < min_height or curses.COLS < min_width:
             stdscr.clear()
             curses.update_lines_cols()
-            stdscr.addstr(0, 0, f"Min size is {min_hight}px x {min_width}px")
-            stdscr.addstr(1, 0, f"Current Size is {curses.LINES}px x {curses.COLS}px")
+            stdscr.addstr(
+                0, 0, f"Min size width: {min_width}px, height: {min_height}px"
+            )
+            stdscr.addstr(
+                1, 0, f"Current Size width: {curses.COLS}px, height: {curses.LINES}px"
+            )
             stdscr.refresh()
+            time.sleep(0.3)
+
+    def __get_win_sizes(self) -> tuple:
+        dash_x_offset_from_edge = 9
+
+        offset_from_border_y = 1
+        offset_from_title_y = offset_from_border_y + 2
+        for i in self.__ALLOWED_TEAMS:
+            team = getattr(self, i)
+            offset_from_title_y += 1
+            offset_from_title_y *= len(team)
+        offset_from_title_y += 1
+
+        map_w = self.size * (Square().size + 1) + 1
+        map_h = self.size * (Square().size + 1) + 1
+        dash_h = offset_from_title_y + 1
+        dash_w = curses.COLS - map_w - dash_x_offset_from_edge
+        prompt_h = curses.LINES - dash_h
+        prompt_w = curses.COLS - map_w
+        return map_w, map_h, dash_w, dash_h, prompt_w, prompt_h
+
+    def __setup_pads(
+        self,
+        map_h: int,
+        map_w: int,
+        dash_h: int,
+        dash_w: int,
+        prompt_h: int,
+        prompt_w: int,
+    ) -> tuple:
+        if map_h <= 0:
+            raise ValueError("map_h cannot be 0")
+        if map_w <= 0:
+            raise ValueError("map_w cannot be 0")
+        if dash_h <= 0:
+            raise ValueError("dash_h cannot be 0")
+        if dash_w <= 0:
+            raise ValueError("dash_w cannot be 0")
+        if prompt_h <= 0:
+            raise ValueError("prompt_h cannot be 0")
+        if prompt_w <= 0:
+            raise ValueError("prompt_w cannot be 0")
+        map_win = curses.newpad(map_h, map_w)
+        dash_win = curses.newpad(dash_h, dash_w)
+        prompt_win = curses.newpad(prompt_h, prompt_w)
+        return map_win, dash_win, prompt_win
 
     @property
     def red(self) -> dict:
