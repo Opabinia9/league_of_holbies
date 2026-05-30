@@ -189,16 +189,16 @@ class Map:
                 if len(self.red) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = self.size - 1
-                player.column = 0
+                player.row = 0
+                player.column = self.size - 1
                 self.red[player_name] = player
                 self.__squares[player.row][player.column].incoming(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = 0
-                player.column = self.size - 1
+                player.row = self.size - 1
+                player.column = 0
                 self.blue[player_name] = player
                 self.__squares[player.row][player.column].incoming(player)
         # print(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
