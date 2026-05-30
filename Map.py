@@ -439,12 +439,12 @@ class Map:
     def refresh_prompt(self, prompt_win: curses.window) -> None:
         """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
-        prompt_win.refresh(0, 0, dy + 1, mx + 1, py, px)
+        prompt_win.refresh(0, 0, dy + 1, mx + 1, curses.LINES - 1, curses.COLS - 1)
 
     def refresh_dash(self, dash_win: curses.window) -> None:
         """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
-        dash_win.refresh(0, 0, 0, mx + 1, dy, dx)
+        dash_win.refresh(0, 0, 0, mx + 1, dy, curses.COLS - 1)
 
     def refresh_map(self, map_win: curses.window) -> None:
         """"""
@@ -461,11 +461,11 @@ class Map:
     ) -> None:
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         self.__fullprint(map_win, "M")
-        map_win.refresh(0, 0, 0, 0, my, mx)
+        self.refresh_map(map_win)
         self.__fullprint(dash_win, "D")
-        dash_win.refresh(0, 0, 0, mx + 1, dy, dx)
+        self.refresh_dash(dash_win)
         self.__fullprint(prompt_win, "P")
-        prompt_win.refresh(0, 0, dy + 1, mx + 1, py, px)
+        self.refresh_prompt(prompt_win)
 
     @property
     def squares(self) -> list:
