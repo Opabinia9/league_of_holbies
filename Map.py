@@ -22,6 +22,7 @@ class Map:
     def __init__(
         self,
         name: str,
+        stdscr: curses.window,
         blue: dict | None = None,
         red: dict | None = None,
         size: int = 8,
@@ -31,6 +32,7 @@ class Map:
             raise ValueError("Only One Map is Allowed")
         Map.__COUNT += 1
         self.name = name
+        self.stdscr = stdscr
         if blue is not None:
             self.blue = blue
         else:
@@ -94,24 +96,24 @@ class Map:
         map_y = self.size * (Square().size + 1) + 1
         return map_x, map_y
 
-    def launch_game(self, stdscr: curses.window) -> None:
+    def launch_game(self) -> None:
         """"""
-        self.__screen_size(stdscr)
+        self.__screen_size(self.stdscr)
         while True:
-            stdscr.clear()  # This is commented out so it doesnt clear prompt outputs
-            map_x, map_y = self.print_map(stdscr)
+            self.stdscr.clear()  # This is commented out so it doesnt clear prompt outputs
+            map_x, map_y = self.print_map(self.stdscr)
             dash_x = map_x
             dash_y = 1
-            xdelta, ydelta = self.render_dash(dash_y, dash_x, stdscr)
+            xdelta, ydelta = self.render_dash(dash_y, dash_x, self.stdscr)
             py = dash_y + ydelta + 1
             px = dash_x
-            command = self.__prompt(py, px, f"{self.name} >> ", stdscr)
+            command = self.__prompt(py, px, f"{self.name} >> ", self.stdscr)
             time.sleep(1)  # Only For testing Purposes
             args = command.split()
             try:
                 match args[0]:
                     case "add":
-                        self.__add(*args[1:], stdscr=stdscr)
+                        self.__add(*args[1:], stdscr=self.stdscr)
                     case "buy":
                         self.__buy(*args[1:])
                     case "move":
@@ -119,12 +121,12 @@ class Map:
                     case "attack":
                         self.__attack(*args[1:])
                     case "help":
-                        self.__help(stdscr, py + 1, px)
+                        self.__help(self.stdscr, py + 1, px)
                     case _:
                         raise ValueError(f"Undefined command: {args[0]}")
             except BaseException as err:
-                stdscr.addstr(py + 1, px, f"Error: {err}\n")
-                stdscr.refresh()
+                self.stdscr.addstr(py + 1, px, f"Error: {err}\n")
+                self.stdscr.refresh()
 
     def __help(self, stdscr: curses.window, p_y: int, p_x: int) -> None:
         # TODO: Update to match valid commands
@@ -325,6 +327,17 @@ class Map:
         if not isinstance(players, dict):
             raise TypeError("Players Must be a Dictionary.")
         self.__blue = players
+
+    @property
+    def stdscr(self) -> curses.window:
+        """"""
+        return self.__stdscr
+
+    @stdscr.setter
+    def stdscr(self, stdscr: curses.window) -> None:
+        if not isinstance(stdscr, curses.window):
+            raise TypeError("stdscr must be a curses window")
+        self.__stdscr = stdscr
 
 
 class Square:
