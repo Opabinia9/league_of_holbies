@@ -53,42 +53,45 @@ class Map:
         """"""
         Map.__COUNT = 0
 
-    def render_dash(self, y: int, x: int, stdscr: curses.window) -> tuple:
+    def render_dash(self, y: int, x: int, dash_win: curses.window) -> tuple:
         """"""
-        max_y, max_x = stdscr.getmaxyx()
+        max_y, max_x = dash_win.getmaxyx()
         map_name = f"{self.name}"
         border = "*" * (max_x - x - 9)
-        stdscr.addstr(y, x, border)
+        dash_win.addstr(y, x, border)
         current_x = x + 4
         current_y = y + 1
-        stdscr.addstr(current_y, current_x, map_name)
+        dash_win.addstr(current_y, current_x, map_name)
         current_y += 2
         current_x += 4
         for team in self.__ALLOWED_TEAMS:
-            stdscr.addstr(current_y, current_x, f"{team} Team:")
+            dash_win.addstr(current_y, current_x, f"{team} Team:")
             current_y += 1
             team_dict = getattr(self, team)
             for summoner in team_dict:
                 player = team_dict[summoner]
-                stdscr.addstr(current_y, current_x + 8, f"{summoner}: HP: {player.hp}")
+                dash_win.addstr(
+                    current_y, current_x + 8, f"{summoner}: HP: {player.hp}"
+                )
                 current_y += 1
         current_y += 1
-        stdscr.addstr(current_y, x, border)
+        dash_win.addstr(current_y, x, border)
         width = len(border)
         height = current_y - y + 1
         for i in range(height):
-            stdscr.addstr(y + i, x, "*")
-            stdscr.addstr(y + i, max_x - 9, "*")
+            dash_win.addstr(y + i, x, "*")
+            dash_win.addstr(y + i, max_x - 9, "*")
         return width, height
 
-    def print_map(self, stdscr: curses.window) -> tuple:
+    def print_map(self, map_win: curses.window) -> tuple:
         """"""
         map_x, map_y = 0, 0
         for y, row in enumerate(self.squares):
             for x, square in enumerate(row):
-                square.render(y, x, stdscr)
+                square.render(y, x, map_win)
         map_x = self.size * (Square().size + 1) + 5
         map_y = self.size * (Square().size + 1) + 1
+        self.refresh_map(map_win)
         return map_x, map_y
 
     def launch_game(self) -> None:
@@ -96,41 +99,43 @@ class Map:
         self.__screen_size(self.stdscr)
         map_win, dash_win, prompt_win = self.__setup_pads(*self.__get_win_sizes())
         while True:
-            self.stdscr.clear()  # This is commented out so it doesnt clear prompt outputs
-            map_x, map_y = self.print_map(self.stdscr)
-            dash_x = map_x
-            dash_y = 1
-            xdelta, ydelta = self.render_dash(dash_y, dash_x, self.stdscr)
-            py = dash_y + ydelta + 1
-            px = dash_x
-            command = self.__prompt(py, px, f"{self.name} >> ", self.stdscr)
-            time.sleep(1)  # Only For testing Purposes
+            curses.update_lines_cols()
+            self.__resize_pads(map_win, dash_win, prompt_win, *self.__get_win_sizes())
+            my, mx, dy, dx, py, px = self.__get_win_sizes()
+            map_win.clear()
+            dash_win.clear()
+            self.print_map(map_win)
+            self.render_dash(0, 0, dash_win)
+            self.refresh_dash(dash_win)
+            command = self.__prompt(f"{self.name} >> ", prompt_win)
             args = command.split()
-            try:
-                match args[0]:
-                    case "add":
-                        self.__add(*args[1:], stdscr=self.stdscr)
-                    case "buy":
-                        self.__buy(*args[1:])
-                    case "move":
-                        self.__move(*args[1:])
-                    case "attack":
-                        self.__attack(*args[1:])
-                    case "help":
-                        self.__help(self.stdscr, py + 1, px)
-                    case _:
-                        raise ValueError(f"Undefined command: {args[0]}")
-            except BaseException as err:
-                self.stdscr.addstr(py + 1, px, f"Error: {err}\n")
-                self.stdscr.refresh()
+            if args:
+                try:
+                    match args[0]:
+                        case "add":
+                            self.__add(*args[1:], prompt_win=prompt_win)
+                        case "buy":
+                            self.__buy(*args[1:])
+                        case "move":
+                            self.__move(*args[1:])
+                        case "attack":
+                            self.__attack(*args[1:])
+                        case "help":
+                            self.__help(prompt_win, 1, 0)
+                        case _:
+                            raise ValueError(f"Undefined command: {args[0]}")
+                except BaseException as err:
+                    err_msg = f"Error: {err}\n"
+                    prompt_win.addstr(1, 0, err_msg)
+                    self.refresh_prompt(prompt_win)
 
-    def __help(self, stdscr: curses.window, p_y: int, p_x: int) -> None:
+    def __help(self, prompt_win: curses.window, p_y: int, p_x: int) -> None:
         # TODO: Update to match valid commands
-        stdscr.addstr(p_y, p_x, "Available commands:\n")
-        stdscr.addstr(p_y + 1, p_x, "help\n")
-        stdscr.refresh()
+        prompt_win.addstr(p_y, p_x, "Available commands:\n")
+        prompt_win.addstr(p_y + 1, p_x, "help\n")
+        self.refresh_prompt(prompt_win)
 
-    def __add(self, team: str, player_name: str, stdscr: curses.window) -> None:
+    def __add(self, team: str, player_name: str, prompt_win: curses.window) -> None:
         if type(team) is not str:
             raise TypeError("Team should be a string")
         if team not in self.__ALLOWED_TEAMS:
@@ -155,7 +160,8 @@ class Map:
                 self.blue[player_name] = player
                 self.squares[player.row][player.column].incoming(player)
         # TODO: add px, py for better control and reliablity
-        stdscr.addstr(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
+        prompt_win.addstr(1, 0, f"Team Red: {self.red}\nTeam Blue: {self.blue}")
+        self.refresh_prompt(prompt_win)
 
     def __buy(self, item_name: str, player_name: str) -> None:
         player = self.__get_player(player_name)
@@ -225,75 +231,93 @@ class Map:
             return self.red[player_name]
         return None
 
-    def __prompt(self, p_y: int, p_x: int, prompt: str, stdscr: curses.window) -> str:
-        chr = ""
-        left = ""
-        command = ""
-        stdscr.addstr(p_y, p_x, (" " * curses.LINES))
-        stdscr.addstr(p_y, p_x, prompt)
+    def __prompt(self, prompt: str, prompt_win: curses.window) -> str:
+        chr = left = command = ""
+        p_y = p_x = 0
+        prompt_win.move(p_y, p_x)
+        prompt_win.clrtoeol()
+        prompt_win.addstr(p_y, p_x, prompt)
         p_x += len(prompt)
         type_limit = p_x
         while chr != "\n":
-            chr = stdscr.getkey(p_y, p_x - 1)
+            prompt_win.move(p_y, p_x - 1)
+            self.refresh_prompt(prompt_win)
+            chr = prompt_win.getkey()
             while chr in ["KEY_RIGHT", "KEY_LEFT", "KEY_UP", "KEY_BACKSPACE"]:
+                self.refresh_prompt(prompt_win)
                 if chr == "KEY_RIGHT":
                     while chr == "KEY_RIGHT":
                         if left != "":
                             command = command + left[:1]
                             left = left[1:]
                             p_x += 1
-                        chr = stdscr.getkey(p_y, p_x - 1)
+                        prompt_win.move(p_y, p_x - 1)
+                        self.refresh_prompt(prompt_win)
+                        chr = prompt_win.getkey()
                 if chr == "KEY_LEFT":
                     while chr == "KEY_LEFT":
                         if p_x > type_limit:
                             left = command[-1:] + left
                             command = command[:-1]
                             p_x -= 1
-                        chr = stdscr.getkey(p_y, p_x - 1)
+                        prompt_win.move(p_y, p_x - 1)
+                        self.refresh_prompt(prompt_win)
+                        chr = prompt_win.getkey()
                 # TODO: Add coomand History
                 if chr == "KEY_UP":
                     while chr == "KEY_UP":
-                        chr = stdscr.getkey(p_y, p_x - 1)
+                        prompt_win.move(p_y, p_x - 1)
+                        self.refresh_prompt(prompt_win)
+                        chr = prompt_win.getkey()
                 if chr == "KEY_DOWN":
                     while chr == "KEY_DOWN":
-                        chr = stdscr.getkey(p_y, p_x - 1)
+                        prompt_win.move(p_y, p_x - 1)
+                        self.refresh_prompt(prompt_win)
+                        chr = prompt_win.getkey()
                 if chr == "KEY_BACKSPACE":
                     while chr == "KEY_BACKSPACE":
                         if p_x > type_limit:
                             command = command[:-1]
                             p_x -= 1
                             if left != "":
-                                stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
-                                stdscr.addstr(p_y, p_x - 1, left)
+                                prompt_win.move(p_y, p_x)
+                                prompt_win.clrtoeol()
+                                prompt_win.addstr(p_y, p_x - 1, left)
                             else:
-                                stdscr.addstr(p_y, p_x - 1, " ")
-                        chr = stdscr.getkey(p_y, p_x - 1)
+                                prompt_win.delch(p_y, p_x - 1)
+                        prompt_win.move(p_y, p_x - 1)
+                        self.refresh_prompt(prompt_win)
+                        chr = prompt_win.getkey()
                 if chr == "KEY_DC":
                     while chr == "KEY_DC":
                         if left != "":
                             left = left[1:]
                             if left != "":
-                                stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
-                                stdscr.addstr(p_y, p_x - 1, left)
-                        chr = stdscr.getkey(p_y, p_x - 1)
-            if p_x < ((curses.COLS) - 1):
+                                prompt_win.move(p_y, p_x - 1)
+                                prompt_win.clrtoeol()
+                                prompt_win.addstr(p_y, p_x - 1, left)
+                        prompt_win.move(p_y, p_x - 1)
+                        self.refresh_prompt(prompt_win)
+                        chr = prompt_win.getkey()
+            if p_x < ((prompt_win.getmaxyx()[1]) - 1):
                 p_x += 1
                 if chr != "\n":
                     if left != "":
-                        stdscr.addstr(p_y, p_x - 1, " " * (curses.LINES - 1))
-                        stdscr.addstr(p_y, p_x - 1, left)
-                    stdscr.addstr(p_y, p_x - 2, chr)
+                        prompt_win.move(p_y, p_x - 1)
+                        prompt_win.clrtoeol()
+                        prompt_win.addstr(p_y, p_x - 1, left)
+                    prompt_win.addstr(p_y, p_x - 2, chr)
                 command = command + chr
         if left != "":
             command = command[:-1]
             command = command + left
             command += "\n"
-        stdscr.addstr(p_y, p_x, "\n")
-        stdscr.refresh()
+        prompt_win.addstr(p_y, p_x, "\n")
+        self.refresh_prompt(prompt_win)
         return command
 
     def __screen_size(self, stdscr: curses.window) -> None:
-        w1, h1, w2, h2, w3, h3 = self.__get_win_sizes()
+        h1, w1, h2, w2, h3, w3 = self.__get_win_sizes()
         min_width = w1 + (w2 if w2 > w3 else w3)
         min_height = h1 if h1 > (h2 + h3) else (h2 + h3)
         while curses.LINES < min_height or curses.COLS < min_width:
@@ -306,26 +330,22 @@ class Map:
                 1, 0, f"Current Size width: {curses.COLS}px, height: {curses.LINES}px"
             )
             stdscr.refresh()
-            time.sleep(0.3)
 
     def __get_win_sizes(self) -> tuple:
         dash_x_offset_from_edge = 9
 
         offset_from_border_y = 1
         offset_from_title_y = offset_from_border_y + 2
-        for i in self.__ALLOWED_TEAMS:
-            team = getattr(self, i)
-            offset_from_title_y += 1
-            offset_from_title_y *= len(team)
+        offset_from_title_y += (self.__PLAYER_PER_TEAM + 1) * len(self.__ALLOWED_TEAMS)
         offset_from_title_y += 1
 
-        map_w = self.size * (Square().size + 1) + 1
-        map_h = self.size * (Square().size + 1) + 1
+        map_w = (self.size * (Square().size + 1)) + 2
+        map_h = (self.size * (Square().size + 1)) + 2
         dash_h = offset_from_title_y + 1
         dash_w = curses.COLS - map_w - dash_x_offset_from_edge
         prompt_h = curses.LINES - dash_h
         prompt_w = curses.COLS - map_w
-        return map_w, map_h, dash_w, dash_h, prompt_w, prompt_h
+        return map_h, map_w, dash_h, dash_w, prompt_h, prompt_w
 
     def __setup_pads(
         self,
@@ -341,9 +361,9 @@ class Map:
         if map_w <= 0:
             raise ValueError("map_w cannot be 0")
         if dash_h <= 0:
-            raise ValueError("dash_h cannot be 0")
+            raise ValueError(f"dash_h cannot be {dash_h}")
         if dash_w <= 0:
-            raise ValueError("dash_w cannot be 0")
+            raise ValueError(f"dash_w cannot be {dash_w}")
         if prompt_h <= 0:
             raise ValueError("prompt_h cannot be 0")
         if prompt_w <= 0:
@@ -351,7 +371,66 @@ class Map:
         map_win = curses.newpad(map_h, map_w)
         dash_win = curses.newpad(dash_h, dash_w)
         prompt_win = curses.newpad(prompt_h, prompt_w)
+        map_win.keypad(True)
+        dash_win.keypad(True)
+        prompt_win.keypad(True)
         return map_win, dash_win, prompt_win
+
+    def __resize_pads(
+        self,
+        map_win,
+        dash_win,
+        prompt_win,
+        map_h: int,
+        map_w: int,
+        dash_h: int,
+        dash_w: int,
+        prompt_h: int,
+        prompt_w: int,
+    ) -> tuple:
+        if map_h <= 0:
+            raise ValueError("map_h cannot be 0")
+        if map_w <= 0:
+            raise ValueError("map_w cannot be 0")
+        if dash_h <= 0:
+            raise ValueError(f"dash_h cannot be {dash_h}")
+        if dash_w <= 0:
+            raise ValueError(f"dash_w cannot be {dash_w}")
+        if prompt_h <= 0:
+            raise ValueError("prompt_h cannot be 0")
+        if prompt_w <= 0:
+            raise ValueError("prompt_w cannot be 0")
+        map_win.resize(map_h, map_w)
+        dash_win.resize(dash_h, dash_w)
+        prompt_win.resize(prompt_h, prompt_w)
+        return map_win, dash_win, prompt_win
+
+    def refresh_prompt(self, prompt_win):
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        prompt_win.refresh(0, 0, dy + 1, mx + 1, py, px)
+
+    def refresh_dash(self, dash_win):
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        dash_win.refresh(0, 0, 0, mx + 1, dy, dx)
+
+    def refresh_map(self, map_win):
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        map_win.refresh(0, 0, 0, 0, my, mx)
+
+    def __fullprint(self, pad: curses.window, chr: str) -> None:
+        """"""
+        for i in range(pad.getmaxyx()[0]):
+            for n in range(pad.getmaxyx()[1] - 1):
+                pad.addstr(i, n, chr)
+
+    def __win_print(self, map_win, dash_win, prompt_win):
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        self.__fullprint(map_win, "M")
+        map_win.refresh(0, 0, 0, 0, my, mx)
+        self.__fullprint(dash_win, "D")
+        dash_win.refresh(0, 0, 0, mx + 1, dy, dx)
+        self.__fullprint(prompt_win, "P")
+        prompt_win.refresh(0, 0, dy + 1, mx + 1, py, px)
 
     @property
     def red(self) -> dict:
