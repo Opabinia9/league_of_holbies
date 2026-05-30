@@ -18,6 +18,13 @@ class Map:
     __COUNT = 0
     __ALLOWED_TEAMS = ("blue", "red")
     __PLAYER_PER_TEAM = 2
+    __instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__instance is None:
+            raise ValueError("Map has not been created")
+        return cls.__instance
 
     def __init__(
         self,
@@ -25,9 +32,8 @@ class Map:
         stdscr: curses.window,
         blue: dict | None = None,
         red: dict | None = None,
-        size: int = 100,
+        size: int = 10,
     ) -> None:
-        """"""
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
         Map.__COUNT += 1
@@ -42,14 +48,27 @@ class Map:
         else:
             self.red = {}
         self.size = size
-        self.squares = []
+
+        self._squares = []
         for _row in range(self.size):
             col = []
             for _column in range(self.size):
                 col.append(Square())
-            self.squares.append(col)
+            self._squares.append(col)
+
         self.red_spawn = [0, self.size - 1]
         self.blue_spawn = [self.size - 1, 0]
+        Map.__instance = self
+
+    @property
+    def squares(self):
+        return self._squares
+
+    @squares.setter
+    def squares(self, matrix):
+        if not isinstance(matrix, list):
+            raise TypeError("Squares must be a list layout grid")
+        self._squares = matrix
 
     def __del__(self) -> None:
         """"""
@@ -197,7 +216,9 @@ class Map:
         else:
             defender.hp -= attacker.attack_score
         if defender.hp <= 0:
-            defender.hp = "dead"
+            defender.hp = 0
+            time.sleep(2)
+            defender.respawn()
 
     def __move(self, direction: str, player_name: str) -> None:
         player = self.__get_player(player_name)
@@ -360,7 +381,7 @@ class Map:
 class Square:
     """"""
 
-    def __init__(self, size: int = 6) -> None:
+    def __init__(self, size: int = 4) -> None:
         """"""
         self.__size = size
         self.players = []

@@ -12,7 +12,7 @@ class Yasuo(Player):
             gold=600,
             inventory=[],
             attack_score=100,
-            attack_range=1,
+            attack_range=20,
         )
 
     def attack(self):
