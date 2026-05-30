@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Module: Map."""
 
-import Player
+from typing import Self
+
+from Player import Player
 from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
 import curses
@@ -21,7 +23,8 @@ class Map:
     __instance = None
 
     @classmethod
-    def get_instance(cls):
+    def get_instance(cls) -> Self:
+        """"""
         if cls.__instance is None:
             raise ValueError("Map has not been created")
         return cls.__instance
@@ -34,6 +37,7 @@ class Map:
         red: dict | None = None,
         size: int = 10,
     ) -> None:
+        """"""
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
         Map.__COUNT += 1
@@ -49,26 +53,16 @@ class Map:
             self.red = {}
         self.size = size
 
-        self._squares = []
+        self.squares = []
         for _row in range(self.size):
             col = []
             for _column in range(self.size):
                 col.append(Square())
-            self._squares.append(col)
+            self.squares.append(col)
 
         self.red_spawn = [0, self.size - 1]
         self.blue_spawn = [self.size - 1, 0]
         Map.__instance = self
-
-    @property
-    def squares(self):
-        return self._squares
-
-    @squares.setter
-    def squares(self, matrix):
-        if not isinstance(matrix, list):
-            raise TypeError("Squares must be a list layout grid")
-        self._squares = matrix
 
     def __del__(self) -> None:
         """"""
@@ -76,7 +70,7 @@ class Map:
 
     def render_dash(self, y: int, x: int, dash_win: curses.window) -> tuple:
         """"""
-        max_y, max_x = dash_win.getmaxyx()
+        max_x = dash_win.getmaxyx()[1]
         map_name = f"{self.name}"
         border = "*" * (max_x - x - 9)
         dash_win.addstr(y, x, border)
@@ -124,7 +118,6 @@ class Map:
         while True:
             curses.update_lines_cols()
             self.__resize_pads(map_win, dash_win, prompt_win, *self.__get_win_sizes())
-            my, mx, dy, dx, py, px = self.__get_win_sizes()
             map_win.clear()
             dash_win.clear()
             self.print_map(map_win)
@@ -205,7 +198,7 @@ class Map:
         if defender.hp <= 0:
             raise ValueError(f"{to_plyr} is already dead")
         if attacker.hp <= 0 or attacker.team == defender.team:
-            raise ValueError(f"Action Unavailable")
+            raise ValueError("Action Unavailable")
         distance = (
             (defender.row - attacker.row) ** 2
             + (defender.column - attacker.column) ** 2
@@ -259,7 +252,7 @@ class Map:
         player.row = target_row
         player.column = target_column
 
-    def __get_player(self, player_name: str) -> Player.Player | None:
+    def __get_player(self, player_name: str) -> Player | None:
         if player_name in self.blue:
             return self.blue[player_name]
         if player_name in self.red:
@@ -413,9 +406,9 @@ class Map:
 
     def __resize_pads(
         self,
-        map_win,
-        dash_win,
-        prompt_win,
+        map_win: curses.window,
+        dash_win: curses.window,
+        prompt_win: curses.window,
         map_h: int,
         map_w: int,
         dash_h: int,
@@ -440,25 +433,29 @@ class Map:
         prompt_win.resize(prompt_h, prompt_w)
         return map_win, dash_win, prompt_win
 
-    def refresh_prompt(self, prompt_win):
+    def refresh_prompt(self, prompt_win: curses.window) -> None:
+        """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         prompt_win.refresh(0, 0, dy + 1, mx + 1, py, px)
 
-    def refresh_dash(self, dash_win):
+    def refresh_dash(self, dash_win: curses.window) -> None:
+        """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         dash_win.refresh(0, 0, 0, mx + 1, dy, dx)
 
-    def refresh_map(self, map_win):
+    def refresh_map(self, map_win: curses.window) -> None:
+        """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         map_win.refresh(0, 0, 0, 0, my, mx)
 
     def __fullprint(self, pad: curses.window, chr: str) -> None:
-        """"""
         for i in range(pad.getmaxyx()[0]):
             for n in range(pad.getmaxyx()[1] - 1):
                 pad.addstr(i, n, chr)
 
-    def __win_print(self, map_win, dash_win, prompt_win):
+    def __win_print(
+        self, map_win: curses.window, dash_win: curses.window, prompt_win: curses.window
+    ) -> None:
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         self.__fullprint(map_win, "M")
         map_win.refresh(0, 0, 0, 0, my, mx)
@@ -466,6 +463,17 @@ class Map:
         dash_win.refresh(0, 0, 0, mx + 1, dy, dx)
         self.__fullprint(prompt_win, "P")
         prompt_win.refresh(0, 0, dy + 1, mx + 1, py, px)
+
+    @property
+    def squares(self) -> list:
+        """"""
+        return self.__squares
+
+    @squares.setter
+    def squares(self, matrix: list) -> None:
+        if not isinstance(matrix, list):
+            raise TypeError("Squares must be a list layout grid")
+        self.__squares = matrix
 
     @property
     def red(self) -> dict:
@@ -523,11 +531,11 @@ class Square:
     def players(self, players: list) -> None:
         self.__players = players
 
-    def incoming(self, player: Player.Player) -> None:
+    def incoming(self, player: Player) -> None:
         """"""
         self.players.append(player)
 
-    def outgoing(self, player: Player.Player) -> None:
+    def outgoing(self, player: Player) -> None:
         """"""
         self.players.remove(player)
 
