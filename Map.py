@@ -25,7 +25,7 @@ class Map:
         stdscr: curses.window,
         blue: dict | None = None,
         red: dict | None = None,
-        size: int = 8,
+        size: int = 100,
     ) -> None:
         """"""
         if Map.__COUNT >= 1:
@@ -72,7 +72,11 @@ class Map:
             team_dict = getattr(self, team)
             for summoner in team_dict:
                 player = team_dict[summoner]
-                stdscr.addstr(current_y, current_x + 8, f"{summoner}: HP: {player.hp}")
+                stdscr.addstr(
+                    current_y,
+                    current_x + 8,
+                    f"{summoner}: Max HP: {player.max_hp} Current HP: {player.hp}",
+                )
                 current_y += 1
         # stdscr.addstr(current_y, x + 4, "Red Team:")
         current_y += 1
@@ -129,6 +133,7 @@ class Map:
             except BaseException as err:
                 self.stdscr.addstr(py + 1, px, f"Error: {err}\n")
                 self.stdscr.refresh()
+                time.sleep(3)
 
     def __help(self, stdscr: curses.window, p_y: int, p_x: int) -> None:
         # TODO: Update to match valid commands
@@ -151,6 +156,7 @@ class Map:
                 player.row = self.red_spawn[0]
                 player.column = self.red_spawn[1]
                 self.red[player_name] = player
+                player.team = team
                 self.squares[player.row][player.column].incoming(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
@@ -159,6 +165,7 @@ class Map:
                 player.row = self.blue_spawn[0]
                 player.column = self.blue_spawn[1]
                 self.blue[player_name] = player
+                player.team = team
                 self.squares[player.row][player.column].incoming(player)
         # TODO: add px, py for better control and reliablity
         stdscr.addstr(f"Team Red: {self.red}\nTeam Blue: {self.blue}")
@@ -179,7 +186,7 @@ class Map:
             raise ValueError(f"{to_plyr} is not selected")
         if defender.hp <= 0:
             raise ValueError(f"{to_plyr} is already dead")
-        if attacker.hp <= 0:
+        if attacker.hp <= 0 or attacker.team == defender.team:
             raise ValueError(f"Action Unavailable")
         distance = (
             (defender.row - attacker.row) ** 2
