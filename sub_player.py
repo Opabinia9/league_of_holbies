@@ -5,7 +5,15 @@ from Player import Player
 
 class Yasuo(Player):
     def __init__(self):
-        super().__init__("Yasuo", 800, 0, 600, [], 100)
+        super().__init__(
+            name="Yasuo",
+            hp=800,
+            mana=0,
+            gold=600,
+            inventory=[],
+            attack_score=100,
+            attack_range=1,
+        )
 
     def attack(self):
         print(f"{self.name} is attacking with")
@@ -33,7 +41,15 @@ class Yurnero(Player):
 
 class Ashe(Player):
     def __init__(self):
-        super().__init__("Ashe", 200, 0, 600, [], 60)
+        super().__init__(
+            name="Ashe",
+            hp=200,
+            mana=0,
+            gold=600,
+            inventory=[],
+            attack_score=60,
+            attack_range=3,
+        )
 
     def attack(self):
         print(f"{self.name} is attacking with")

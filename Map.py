@@ -48,6 +48,8 @@ class Map:
             for _column in range(self.size):
                 col.append(Square())
             self.squares.append(col)
+        self.red_spawn = [0, self.size - 1]
+        self.blue_spawn = [self.size - 1, 0]
 
     def __del__(self) -> None:
         """"""
@@ -146,16 +148,16 @@ class Map:
                 if len(self.red) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = 0
-                player.column = self.size - 1
+                player.row = self.red_spawn[0]
+                player.column = self.red_spawn[1]
                 self.red[player_name] = player
                 self.squares[player.row][player.column].incoming(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = self.size - 1
-                player.column = 0
+                player.row = self.blue_spawn[0]
+                player.column = self.blue_spawn[1]
                 self.blue[player_name] = player
                 self.squares[player.row][player.column].incoming(player)
         # TODO: add px, py for better control and reliablity
@@ -175,6 +177,10 @@ class Map:
         defender = self.__get_player(to_plyr)
         if defender is None:
             raise ValueError(f"{to_plyr} is not selected")
+        if defender.hp <= 0:
+            raise ValueError(f"{to_plyr} is already dead")
+        if attacker.hp <= 0:
+            raise ValueError(f"Action Unavailable")
         distance = (
             (defender.row - attacker.row) ** 2
             + (defender.column - attacker.column) ** 2
@@ -183,11 +189,15 @@ class Map:
             pass
         else:
             defender.hp -= attacker.attack_score
+        if defender.hp <= 0:
+            defender.hp = "dead"
 
     def __move(self, direction: str, player_name: str) -> None:
         player = self.__get_player(player_name)
         if player is None:
             raise ValueError("Player not found")
+        if player.hp <= 0:
+            raise ValueError("Action Unavailable")
 
         current_square = self.squares[player.row][player.column]
         target_row = player.row
