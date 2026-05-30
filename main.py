@@ -22,6 +22,12 @@ try:
 except KeyboardInterrupt:
     winend()
     print("Game Exited, Bye ['_']")
+except curses.error:
+    x = curses.COLS
+    y = curses.LINES
+    winend()
+    print("CURSES GO AHHHHH!")
+    print(f"size is {x}x {y}y")
 except BaseException as e:
     winend()
     raise e
