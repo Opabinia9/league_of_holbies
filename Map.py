@@ -51,19 +51,6 @@ class Map:
         """"""
         Map.__COUNT = 0
 
-    # def __str__(self):
-    #     map_name = f"Map Name: {self.name}"
-    #     border = f"*" * len(map_name)
-    #     str = border + "\n" + map_name + "\n"
-    #     str += f"\tBlue Team:" + "\n"
-    #     for summoner in self.blue:
-    #         str += "\t" * 2 + f"{summoner}" + "\n"
-    #     str += f"\tRed Team:" + "\n"
-    #     for summoner in self.red:
-    #         str += "\t" * 2 + f"{summoner}" + "\n"
-    #     str += border + "\n"
-    #     return str
-
     def render_dash(self, y: int, x: int, stdscr: curses.window) -> tuple:
         """"""
         max_y, max_x = stdscr.getmaxyx()
@@ -97,25 +84,6 @@ class Map:
             stdscr.addstr(y + i, max_x - 9, "*")
         return width, height
 
-    # def print_map(self):
-    #     out, occupied = "", "   "
-    #     border = "|---"
-    #     space = f"|   "
-    #     out += f"-" * (4 * self.size + 1) + "\n"
-    #     for row in range(self.size):
-    #         out += "|"
-    #         for i in range(self.size):
-    #             out += self.__squares[row][i].top() + "|"
-    #         out += "\n|"
-    #         for j in range(self.size):
-    #             out += self.__squares[row][j].mid() + "|"
-    #         out += "\n|"
-    #         for k in range(self.size):
-    #             out += self.__squares[row][k].bot() + "|"
-    #         out += "\n"
-    #         out += f"-" * (4 * self.size + 1) + "\n"
-    #     return out
-
     def print_map(self, stdscr: curses.window) -> tuple:
         """"""
         map_x, map_y = 0, 0
@@ -131,7 +99,6 @@ class Map:
         self.__screen_size(stdscr)
         while True:
             stdscr.clear()  # This is commented out so it doesnt clear prompt outputs
-            #           stdscr.addstr(self.print_map())
             map_x, map_y = self.print_map(stdscr)
             dash_x = map_x
             dash_y = 1
