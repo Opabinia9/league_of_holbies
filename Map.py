@@ -366,11 +366,14 @@ class Map:
         offset_from_title_y = offset_from_border_y + 2
         offset_from_title_y += (self.__PLAYER_PER_TEAM + 1) * len(self.__ALLOWED_TEAMS)
         offset_from_title_y += 1
+        # TODO: update the dash min math
+        dash_min = 55
 
         map_w = (self.size * (Square().size + 1)) + 2
         map_h = (self.size * (Square().size + 1)) + 2
         dash_h = offset_from_title_y + 1
-        dash_w = curses.COLS - map_w - dash_x_offset_from_edge
+        dash_y = curses.COLS - map_w - dash_x_offset_from_edge
+        dash_w = dash_y if dash_y > dash_min else dash_min
         prompt_h = curses.LINES - dash_h
         prompt_w = curses.COLS - map_w
         return map_h, map_w, dash_h, dash_w, prompt_h, prompt_w
