@@ -103,9 +103,9 @@ class Map:
             dash_x = map_x
             dash_y = 1
             xdelta, ydelta = self.render_dash(dash_y, dash_x, stdscr)
-            command = self.__prompt(
-                dash_y + ydelta + 1, dash_x, f"{self.name} >> ", stdscr
-            )
+            py = dash_y + ydelta + 1
+            px = dash_x
+            command = self.__prompt(py, px, f"{self.name} >> ", stdscr)
             time.sleep(1)  # Only For testing Purposes
             args = command.split()
             try:
