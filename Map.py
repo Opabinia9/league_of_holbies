@@ -18,6 +18,13 @@ class Map:
     __COUNT = 0
     __ALLOWED_TEAMS = ("blue", "red")
     __PLAYER_PER_TEAM = 2
+    __instance = None
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__instance is None:
+            raise ValueError("Map has not been created")
+        return cls.__instance
 
     def __init__(
         self,
@@ -25,9 +32,8 @@ class Map:
         stdscr: curses.window,
         blue: dict | None = None,
         red: dict | None = None,
-        size: int = 8,
+        size: int = 10,
     ) -> None:
-        """"""
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
         Map.__COUNT += 1
@@ -42,12 +48,27 @@ class Map:
         else:
             self.red = {}
         self.size = size
-        self.squares = []
+
+        self._squares = []
         for _row in range(self.size):
             col = []
             for _column in range(self.size):
                 col.append(Square())
-            self.squares.append(col)
+            self._squares.append(col)
+
+        self.red_spawn = [0, self.size - 1]
+        self.blue_spawn = [self.size - 1, 0]
+        Map.__instance = self
+
+    @property
+    def squares(self):
+        return self._squares
+
+    @squares.setter
+    def squares(self, matrix):
+        if not isinstance(matrix, list):
+            raise TypeError("Squares must be a list layout grid")
+        self._squares = matrix
 
     def __del__(self) -> None:
         """"""
@@ -71,7 +92,9 @@ class Map:
             for summoner in team_dict:
                 player = team_dict[summoner]
                 dash_win.addstr(
-                    current_y, current_x + 8, f"{summoner}: HP: {player.hp}"
+                    current_y,
+                    current_x + 8,
+                    f"{summoner}: Max HP: {player.max_hp} Current HP: {player.hp}",
                 )
                 current_y += 1
         current_y += 1
@@ -147,17 +170,19 @@ class Map:
                 if len(self.red) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = 0
-                player.column = self.size - 1
+                player.row = self.red_spawn[0]
+                player.column = self.red_spawn[1]
                 self.red[player_name] = player
+                player.team = team
                 self.squares[player.row][player.column].incoming(player)
             case "blue":
                 if len(self.blue) >= self.__PLAYER_PER_TEAM:
                     raise ValueError("Team already full")
                 player = PlayerFactory(player_name)
-                player.row = self.size - 1
-                player.column = 0
+                player.row = self.blue_spawn[0]
+                player.column = self.blue_spawn[1]
                 self.blue[player_name] = player
+                player.team = team
                 self.squares[player.row][player.column].incoming(player)
         # TODO: add px, py for better control and reliablity
         prompt_win.addstr(1, 0, f"Team Red: {self.red}\nTeam Blue: {self.blue}")
@@ -177,6 +202,10 @@ class Map:
         defender = self.__get_player(to_plyr)
         if defender is None:
             raise ValueError(f"{to_plyr} is not selected")
+        if defender.hp <= 0:
+            raise ValueError(f"{to_plyr} is already dead")
+        if attacker.hp <= 0 or attacker.team == defender.team:
+            raise ValueError(f"Action Unavailable")
         distance = (
             (defender.row - attacker.row) ** 2
             + (defender.column - attacker.column) ** 2
@@ -185,11 +214,17 @@ class Map:
             pass
         else:
             defender.hp -= attacker.attack_score
+        if defender.hp <= 0:
+            defender.hp = 0
+            time.sleep(2)
+            defender.respawn()
 
     def __move(self, direction: str, player_name: str) -> None:
         player = self.__get_player(player_name)
         if player is None:
             raise ValueError("Player not found")
+        if player.hp <= 0:
+            raise ValueError("Action Unavailable")
 
         current_square = self.squares[player.row][player.column]
         target_row = player.row
@@ -469,7 +504,7 @@ class Map:
 class Square:
     """"""
 
-    def __init__(self, size: int = 6) -> None:
+    def __init__(self, size: int = 4) -> None:
         """"""
         self.__size = size
         self.players = []

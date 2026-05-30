@@ -23,6 +23,7 @@ class Player(ABC):
         column=0,
     ):
         self.name = name
+        self.max_hp = hp
         self.hp = hp
         self.mana = mana
         self.gold = gold
@@ -62,6 +63,16 @@ class Player(ABC):
     def name(self, name):
         self.__name = name
 
+    """Champion Team"""
+
+    @property
+    def team(self):
+        return self.__team
+
+    @team.setter
+    def team(self, team):
+        self.__team = team
+
     """Hp of user/champion"""
 
     @property
@@ -71,6 +82,14 @@ class Player(ABC):
     @hp.setter
     def hp(self, hp):
         self.__hp = hp
+
+    @property
+    def max_hp(self):
+        return self.__maxhp
+
+    @max_hp.setter
+    def max_hp(self, hp):
+        self.__maxhp = hp
 
     """Mana of user/champion"""
 
@@ -151,3 +170,14 @@ class Player(ABC):
     @column.setter
     def column(self, column):
         self.__column = column
+
+    def respawn(self):
+        from Map import Map
+
+        game_map = Map.get_instance()
+        game_map.squares[self.row][self.column].outgoing(self)
+        self.hp = self.max_hp
+        spawn_coords = getattr(game_map, f"{self.team}_spawn")
+        self.row = spawn_coords[0]
+        self.column = spawn_coords[1]
+        game_map.squares[self.row][self.column].incoming(self)
