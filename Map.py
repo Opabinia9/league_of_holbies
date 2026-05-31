@@ -32,7 +32,7 @@ class Map:
         stdscr: curses.window,
         blue: dict | None = None,
         red: dict | None = None,
-        size: int = 10,
+        size: int = 100,
     ) -> None:
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
@@ -381,7 +381,7 @@ class Map:
 class Square:
     """"""
 
-    def __init__(self, size: int = 4) -> None:
+    def __init__(self, size: int = 3) -> None:
         """"""
         self.__size = size
         self.players = []
