@@ -17,7 +17,7 @@ curses.noecho()
 
 
 try:
-    map = Map("kalid", stdscr, {}, {}, 5)
+    map = Map("kalid", stdscr, {}, {})
     map.launch_game()
 except KeyboardInterrupt:
     winend()
