@@ -42,6 +42,7 @@ class Map:
         if Map.__COUNT >= 1:
             raise ValueError("Only One Map is Allowed")
         self.__chatboxdisplay = ""
+        self.left = 0
         Map.__COUNT += 1
         self.name = name
         self.stdscr = stdscr
@@ -70,7 +71,8 @@ class Map:
         self._console_history = []
         self.console_gap = 1
         Map.__instance = self
-        self.left = 0
+        self.cursor_pos = 3
+        self.__chatbox_start = 0
         self.idx = 0
         self.recent_chat = ""
 
@@ -150,7 +152,7 @@ class Map:
         if key == "\n":
             self.typing = True
             self.idx = 0
-            self.left = 0
+            self.cursor_pos = len(self.command_buffer)
             self.hist_reset = 0
             try:
                 curses.curs_set(1)
@@ -199,21 +201,18 @@ class Map:
             except curses.error:
                 pass
         elif key == "KEY_BACKSPACE":
-            self.command_buffer = self.remove_idx(self.left, self.command_buffer)
+            if self.cursor_pos > 0:
+                self.command_buffer = (
+                    self.command_buffer[: self.cursor_pos - 1]
+                    + self.command_buffer[self.cursor_pos :]
+                )
+                self.cursor_pos -= 1
         elif key == "KEY_DC":
-            if self.left > 1:
-                self.command_buffer = self.remove_idx(
-                    self.left - 2, self.command_buffer
+            if self.cursor_pos < len(self.command_buffer):
+                self.command_buffer = (
+                    self.command_buffer[: self.cursor_pos]
+                    + self.command_buffer[self.cursor_pos + 1 :]
                 )
-                self.left -= 1
-            elif self.left == -1:
-                self.command_buffer = self.remove_idx(
-                    self.left - 1, self.command_buffer
-                )
-                self.left -= 1
-            else:
-                self.command_buffer = self.remove_idx(self.left, self.command_buffer)
-
         elif key == "KEY_RESIZE":
             pass
         elif key == "KEY_UP":
@@ -242,19 +241,16 @@ class Map:
             self.command_buffer = self.recent_chat
 
         elif key == "KEY_RIGHT":
-            if self.left > 0:
-                self.left -= 1
+            self.cursor_pos += 1
         elif key == "KEY_LEFT":
-            self.left += 1
+            self.cursor_pos -= 1
         else:
-            if self.left != 0:
-                self.refresh_ui()
-                self.command_buffer = self.insert_idx(
-                    self.left, key, self.command_buffer
-                )
-            else:
-                self.refresh_ui()
-                self.command_buffer += key
+            self.command_buffer = (
+                self.command_buffer[: self.cursor_pos]
+                + key
+                + self.command_buffer[self.cursor_pos :]
+            )
+            self.cursor_pos += 1
 
     def __help(self, prompt_win: curses.window, p_y: int, p_x: int) -> None:
         # TODO: Update to match valid commands
@@ -470,12 +466,17 @@ class Map:
         start_y = input_y - self.console_gap - len(history) - 1
 
         if self.typing:
-            self.__chatboxdisplay = f"{self.command_buffer}"[-50:]
-            self.prompt_win.addstr(input_y - 1, 0, f" >> " + self.__chatboxdisplay)
+            width = 50
+            cursor_idx = len(self.command_buffer) + self.left
+            start = max(0, cursor_idx - width + 1)
+            end = start + width
+            self.__chatboxdisplay = self.command_buffer[start:end]
+            self.prompt_win.addstr(input_y - 1, 0, ">> " + self.__chatboxdisplay)
+            self.__chatbox_start = start
 
         for line in history:
             if start_y >= 0:
-                self.prompt_win.addstr(start_y, 0, line[: pw - 1])
+                self.prompt_win.addstr(start_y, 0, f">> {line[: pw - 1]}")
             start_y += 1
 
         self.refresh_ui()
@@ -498,7 +499,7 @@ class Map:
             elif cmd == "help":
                 self.console_print("Commands: add buy move attack help")
             else:
-                self.console_print(text)
+                self.console_print(f"{text}")
         except Exception as err:
             self.console_print(f"[Command Error] {err}")
 
@@ -516,14 +517,7 @@ class Map:
 
         ### DRAW TO SCREEN ###
         if self.typing:
-            cursor_x = 4 + len(self.__chatboxdisplay) - abs(self.left)
-            ph, pw = self.prompt_win.getmaxyx()
-            # Clip cursor_x if text exceeds window boundary width
-            if cursor_x >= pw - 1:
-                cursor_x = pw - 1
-            elif cursor_x < 4:
-                cursor_x = 4
-            self.prompt_win.move(ph - 2, cursor_x)
+            self.prompt_win.move(py - 2, 3 + self.cursor_pos)
         curses.doupdate()
 
     def __fullprint(self, pad: curses.window, chr: str) -> None:
@@ -623,17 +617,15 @@ class Map:
         try:
             return fn(*args, **kwargs)
         except Exception as err:
-            self.console_print(str(err))
+            self.console_print(f"{str(err)}")
 
     @property
-    def left(self):
-        return self.__left
+    def cursor_pos(self):
+        return self.__cursor_pos
 
-    @left.setter
-    def left(self, left: int):
-        if left < 0:
-            raise ValueError("Cursor must stay on the line!")
-        self.__left = min(left, len(self.__chatboxdisplay))
+    @cursor_pos.setter
+    def cursor_pos(self, pos):
+        self.__cursor_pos = max(0, min(pos, len(self.command_buffer)))
 
     @property
     def idx(self):
@@ -656,24 +648,6 @@ class Map:
     def console_history(self, command: str):
         self._console_history.append(command)
 
-    def insert_idx(self, idx: int, key: str, dest: str) -> str:
-        if idx == 0:
-            dest += key
-        else:
-            string_begin = dest[:-idx]
-            string_end = dest[-idx:]
-            dest = string_begin + key + string_end
-        return dest
-
-    def remove_idx(self, idx: int, dest: str) -> str:
-        if idx == 0:
-            dest = dest[:-1]
-        else:
-            string_begin = dest[: -idx - 1]
-            string_end = dest[-idx:]
-            dest = string_begin + string_end
-        return dest
-
     @property
     def recent_chat(self):
         return self.__recent_chat
@@ -681,6 +655,14 @@ class Map:
     @recent_chat.setter
     def recent_chat(self, text_input: str):
         self.__recent_chat = text_input
+
+    @property
+    def left(self):
+        return self.__left
+
+    @left.setter
+    def left(self, left: int):
+        self.__left = left
 
 
 class Square:
