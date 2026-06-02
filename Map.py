@@ -201,7 +201,19 @@ class Map:
         elif key == "KEY_BACKSPACE":
             self.command_buffer = self.remove_idx(self.left, self.command_buffer)
         elif key == "KEY_DC":
-            pass
+            if self.left > 1:
+                self.command_buffer = self.remove_idx(
+                    self.left - 2, self.command_buffer
+                )
+                self.left -= 1
+            elif self.left == -1:
+                self.command_buffer = self.remove_idx(
+                    self.left - 1, self.command_buffer
+                )
+                self.left -= 1
+            else:
+                self.command_buffer = self.remove_idx(self.left, self.command_buffer)
+
         elif key == "KEY_RESIZE":
             pass
         elif key == "KEY_UP":
@@ -224,8 +236,9 @@ class Map:
             if self.idx == 0 and self.hist_reset == 0:
                 self.recent_chat = self.command_buffer
                 self.hist_reset = 1
-            self.idx = 0
-            self.hist_reset = 0
+            else:
+                self.idx = 0
+                self.hist_reset = 0
             self.command_buffer = self.recent_chat
 
         elif key == "KEY_RIGHT":
