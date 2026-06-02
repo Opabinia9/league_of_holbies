@@ -72,6 +72,7 @@ class Map:
         Map.__instance = self
         self.left = 0
         self.idx = 0
+        self.recent_chat = ""
 
     def __del__(self) -> None:
         """"""
@@ -198,30 +199,34 @@ class Map:
             except curses.error:
                 pass
         elif key == "KEY_BACKSPACE":
-            self.command_buffer = self.command_buffer[:-1]
+            self.command_buffer = self.remove_idx(self.left, self.command_buffer)
         elif key == "KEY_DC":
             pass
         elif key == "KEY_RESIZE":
             pass
         elif key == "KEY_UP":
             if self.idx == 0 and self.hist_reset == 0:
-                self.__recent_chat = self.command_buffer
+                self.recent_chat = self.command_buffer
                 self.hist_reset = 1
             self.idx += 1
             if self.idx == 0 and self.hist_reset == 1:
-                self.command_buffer = self.__recent_chat
+                self.command_buffer = self.recent_chat
+                self.hist_reset = 0
             else:
                 try:
-                    self.command_buffer = self.console_history[self.idx - 1]
+                    self.command_buffer = self.console_history[
+                        (len(self.console_history) - (self.idx))
+                    ]
                 except:
                     pass
 
         elif key == "KEY_DOWN":
             if self.idx == 0 and self.hist_reset == 0:
-                self.__recent_chat = self.command_buffer
+                self.recent_chat = self.command_buffer
                 self.hist_reset = 1
             self.idx = 0
-            self.command_buffer = self.__recent_chat
+            self.hist_reset = 0
+            self.command_buffer = self.recent_chat
 
         elif key == "KEY_RIGHT":
             if self.left > 0:
@@ -646,6 +651,23 @@ class Map:
             string_end = dest[-idx:]
             dest = string_begin + key + string_end
         return dest
+
+    def remove_idx(self, idx: int, dest: str) -> str:
+        if idx == 0:
+            dest = dest[:-1]
+        else:
+            string_begin = dest[: -idx - 1]
+            string_end = dest[-idx:]
+            dest = string_begin + string_end
+        return dest
+
+    @property
+    def recent_chat(self):
+        return self.__recent_chat
+
+    @recent_chat.setter
+    def recent_chat(self, text_input: str):
+        self.__recent_chat = text_input
 
 
 class Square:
