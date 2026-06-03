@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 from Map import Map
 import curses
+import sys
 
 
 def winend():
@@ -17,7 +18,7 @@ curses.noecho()
 
 
 try:
-    map = Map("kalid", stdscr, {}, {})
+    map = Map("kalid", stdscr, {}, {}, int(sys.argv[1]))
     map.launch_game()
 except KeyboardInterrupt:
     winend()

@@ -54,7 +54,7 @@ class Map:
             self.red = red
         else:
             self.red = {}
-        self.size = 2 * size
+        self.size = size
 
         self.squares = []
         for _row in range(self.size):
@@ -67,7 +67,7 @@ class Map:
         self.blue_spawn = [self.size - 1, 0]
         self.typing = False
         self.command_buffer = ""
-        self.hist_reset = 0
+        self.hist_reset = False
         self._console_history = []
         self.console_gap = 1
         Map.__instance = self
@@ -105,11 +105,13 @@ class Map:
                 current_y += 1
         current_y += 1
         dash_win.addstr(current_y, x, border)
+
         width = len(border)
         height = current_y - y + 1
-        for i in range(height):
-            dash_win.addstr(y + i, x, "*")
-            dash_win.addstr(y + i, max_x - 9, "*")
+        for j in range(2):
+            for i in range(height):
+                dash_win.addstr(y + i, x + j, "*")
+                dash_win.addstr(y + i, max_x - 9 - j, "*")
         return width, height
 
     def print_map(self, map_win: curses.window) -> tuple:
@@ -153,7 +155,7 @@ class Map:
             self.typing = True
             self.idx = 0
             self.cursor_pos = len(self.command_buffer)
-            self.hist_reset = 0
+            self.hist_reset = False
             try:
                 curses.curs_set(1)
             except curses.error:
@@ -216,13 +218,13 @@ class Map:
         elif key == "KEY_RESIZE":
             pass
         elif key == "KEY_UP":
-            if self.idx == 0 and self.hist_reset == 0:
+            if self.idx == 0 and not self.hist_reset:
                 self.recent_chat = self.command_buffer
-                self.hist_reset = 1
+                self.hist_reset = True
             self.idx += 1
-            if self.idx == 0 and self.hist_reset == 1:
+            if self.idx == 0 and self.hist_reset:
                 self.command_buffer = self.recent_chat
-                self.hist_reset = 0
+                self.hist_reset = False
             else:
                 try:
                     self.command_buffer = self.console_history[
@@ -232,12 +234,12 @@ class Map:
                     pass
 
         elif key == "KEY_DOWN":
-            if self.idx == 0 and self.hist_reset == 0:
+            if self.idx == 0 and not self.hist_reset:
                 self.recent_chat = self.command_buffer
-                self.hist_reset = 1
+                self.hist_reset = True
             else:
                 self.idx = 0
-                self.hist_reset = 0
+                self.hist_reset = False
             self.command_buffer = self.recent_chat
 
         elif key == "KEY_RIGHT":
