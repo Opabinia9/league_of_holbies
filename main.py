@@ -21,8 +21,12 @@ try:
     map = Map("kalid", stdscr, {}, {}, int(sys.argv[1]))
     map.launch_game()
 except KeyboardInterrupt:
+    x = curses.COLS
+    y = curses.LINES
     winend()
     print("Game Exited, Bye ['_']")
+    print("CURSES GO GRRRRRRRRR!")
+    print(f"size is {x}x {y}y")
 except curses.error:
     x = curses.COLS
     y = curses.LINES

@@ -8,7 +8,6 @@ from playerfactory import PlayerFactory
 from itemfactory import ItemFactory
 import curses
 import time
-import math
 
 
 class Map:
@@ -60,7 +59,12 @@ class Map:
         for _row in range(self.size):
             col = []
             for _column in range(self.size):
-                col.append(Square(math.floor((curses.LINES - 2) / 20)))
+                col.append(
+                    Square(
+                        (curses.COLS - self.__get_win_sizes()[-1] - 2)
+                        // (2 * self.size)
+                    )
+                )
             self.squares.append(col)
 
         self.red_spawn = [0, self.size - 1]
@@ -71,7 +75,7 @@ class Map:
         self._console_history = []
         self.console_gap = 1
         Map.__instance = self
-        self.cursor_pos = 3
+        self.cursor_pos = 0
         self.__chatbox_start = 0
         self.idx = 0
         self.recent_chat = ""
@@ -232,7 +236,6 @@ class Map:
                     ]
                 except:
                     pass
-
         elif key == "KEY_DOWN":
             if self.idx == 0 and not self.hist_reset:
                 self.recent_chat = self.command_buffer
@@ -241,7 +244,6 @@ class Map:
                 self.idx = 0
                 self.hist_reset = False
             self.command_buffer = self.recent_chat
-
         elif key == "KEY_RIGHT":
             self.cursor_pos += 1
         elif key == "KEY_LEFT":
@@ -386,15 +388,14 @@ class Map:
         offset_from_title_y += (self.__PLAYER_PER_TEAM * 3) * len(
             self.__ALLOWED_TEAMS
         ) + 1
-        dash_width = 80
+        dash_width = 70
 
         dash_h = offset_from_title_y + 1
 
         prompt_h = curses.LINES - dash_h
-        map_h, map_w = self.stdscr.getmaxyx()
-        map_w -= dash_width
+        map_h = curses.LINES - 2
 
-        return map_h, map_w, dash_h, dash_width, prompt_h, dash_width
+        return map_h, map_h, dash_h, dash_width, prompt_h, dash_width
 
     def __setup_pads(
         self,
@@ -504,6 +505,21 @@ class Map:
                 self.console_print(f"{text}")
         except Exception as err:
             self.console_print(f"[Command Error] {err}")
+
+    def refresh_prompt(self) -> None:
+        """"""
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        self.prompt_win.refresh(0, 0, dy + 1, mx + 1, curses.LINES - 1, curses.COLS - 1)
+
+    def refresh_dash(self) -> None:
+        """"""
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        self.dash_win.refresh(0, 0, 0, mx + 1, dy, curses.COLS - 1)
+
+    def refresh_map(self) -> None:
+        """"""
+        my, mx, dy, dx, py, px = self.__get_win_sizes()
+        self.map_win.refresh(0, 0, 0, 0, my, mx)
 
     def refresh_ui(self, keu: str = "") -> None:
         """Refresh all UI panes in correct order."""
