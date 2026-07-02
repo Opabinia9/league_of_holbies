@@ -294,7 +294,9 @@ class Map:
     def __buy(self, item_name: str, player_name: str) -> None:
         player = self.__get_player(player_name)
         if player is None:
-            raise ValueError(f"Inactive player ({player_name}) cannot buy item")
+            raise ValueError(
+                f"Inactive player ({player_name}) cannot buy item"
+            )
         item = ItemFactory(item_name)
         player.buy(item)
 
@@ -342,7 +344,9 @@ class Map:
             case "right":
                 target_column += 1
             case _:
-                raise ValueError("Valid directions are: up, down, left and right")
+                raise ValueError(
+                    "Valid directions are: up, down, left and right"
+                )
 
         if (
             target_row < 0
@@ -379,7 +383,9 @@ class Map:
                 0, 0, f"Min size width: {min_width}px, height: {min_height}px"
             )
             stdscr.addstr(
-                1, 0, f"Current Size width: {curses.COLS}px, height: {curses.LINES}px"
+                1,
+                0,
+                f"Current Size width: {curses.COLS}px, height: {curses.LINES}px",
             )
             stdscr.refresh()
 
@@ -474,7 +480,9 @@ class Map:
             start = max(0, cursor_idx - width + 1)
             end = start + width
             self.__chatboxdisplay = self.command_buffer[start:end]
-            self.prompt_win.addstr(input_y - 1, 0, ">> " + self.__chatboxdisplay)
+            self.prompt_win.addstr(
+                input_y - 1, 0, ">> " + self.__chatboxdisplay
+            )
             self.__chatbox_start = start
 
         for line in history:
@@ -509,7 +517,9 @@ class Map:
     def refresh_prompt(self) -> None:
         """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
-        self.prompt_win.refresh(0, 0, dy + 1, mx + 1, curses.LINES - 1, curses.COLS - 1)
+        self.prompt_win.refresh(
+            0, 0, dy + 1, mx + 1, curses.LINES - 1, curses.COLS - 1
+        )
 
     def refresh_dash(self) -> None:
         """"""
@@ -544,7 +554,10 @@ class Map:
                 pad.addstr(i, n, chr)
 
     def __win_print(
-        self, map_win: curses.window, dash_win: curses.window, prompt_win: curses.window
+        self,
+        map_win: curses.window,
+        dash_win: curses.window,
+        prompt_win: curses.window,
     ) -> None:
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         self.__fullprint(map_win, "M")
@@ -714,28 +727,29 @@ class Square:
         self.players.remove(player)
 
     def render(self, y: int, x: int, stdscr: curses.window) -> tuple:
-        height = self.__size
-        width = height * 3
-
-        square_y = y * (height + 1)
-        square_x = x * (width + 1)
-
-        stdscr.addstr(square_y, square_x, "-" * (width + 2))
-
-        for i in range(1, height + 1):
+        """"""
+        square_y = y * (self.__size + 1)
+        square_x = x * (self.__size + 1)
+        stdscr.addstr(square_y, square_x, "-" * (self.__size + 2))
+        for i in range(1, self.__size + 1):
             player = self.players[i - 1] if i - 1 < len(self.players) else None
-
-            content = (
-                " " * width
-                if player is None
-                else f"{player.get_short_name():^{width}}"[:width]
+            stdscr.addstr(
+                square_y + i,
+                square_x,
+                "|"
+                + (
+                    " " * self.__size
+                    if player is None
+                    else f"{player.get_short_name():^{self.size}}"[
+                        0 : self.size
+                    ]
+                )
+                + "|",
             )
-
-            stdscr.addstr(square_y + i, square_x, "|" + content + "|")
-
-            stdscr.addstr(square_y + height + 1, square_x, "-" * (width + 2))
-
-        return width + 2, height + 2
+        stdscr.addstr(
+            square_y + self.__size + 1, square_x, "-" * (self.__size + 2)
+        )
+        return self.size + 2, self.size + 2
 
     def is_full(self) -> bool:
         """"""
