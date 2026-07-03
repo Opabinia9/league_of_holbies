@@ -59,12 +59,7 @@ class Map:
         for _row in range(self.size):
             col = []
             for _column in range(self.size):
-                col.append(
-                    Square(
-                        (curses.COLS - self.__get_win_sizes()[-1] - 2)
-                        // (2 * self.size)
-                    )
-                )
+                col.append(Square(3))
             self.squares.append(col)
 
         self.red_spawn = [0, self.size - 1]
@@ -75,10 +70,11 @@ class Map:
         self._console_history = []
         self.console_gap = 1
         Map.__instance = self
-        self.cursor_pos = 0
         self.__chatbox_start = 0
         self.idx = 0
         self.recent_chat = ""
+        self.command_history = []
+        self.cursor_pos = 0
 
     def __del__(self) -> None:
         """"""
@@ -121,11 +117,22 @@ class Map:
     def print_map(self, map_win: curses.window) -> tuple:
         """"""
         map_x, map_y = 0, 0
+        my, mx = self.__get_win_sizes()[:2]
         for y, row in enumerate(self.squares):
             for x, square in enumerate(row):
                 square.render(y, x, map_win)
-        map_x = self.size * (Square().size + 1) + 5
-        map_y = self.size * (Square().size + 1) + 1
+        try:
+            map_win.addstr(self.size * 4, 0, "-" * (self.size * 8 + 2))
+            for i in range(1, self.size * 4):
+                if i % 4 == 0:
+                    map_win.addstr(i, (self.size * 8 + 1), "-")
+                else:
+                    map_win.addstr(i, (self.size * 8 + 1), "|")
+        except curses.error:
+            raise RuntimeError(
+                f"Final Border Failed\n")
+        map_x = self.size * 8
+        map_y = self.size * 4
         self.refresh_ui()
         return map_x, map_y
 
@@ -138,7 +145,7 @@ class Map:
         curses.curs_set(0)
         while True:
             curses.update_lines_cols()
-            self.__resize_pads(*self.__get_win_sizes())
+#            self.__resize_pads(*self.__get_win_sizes())
             self.map_win.clear()
             self.dash_win.clear()
             self.print_map(self.map_win)
@@ -200,6 +207,7 @@ class Map:
                 pass
         elif key == "\n":
             self.__execute_console(self.command_buffer)
+            self.command_history.append(self.command_buffer)
             self.command_buffer = ""
             self.typing = False
             try:
@@ -210,14 +218,14 @@ class Map:
             if self.cursor_pos > 0:
                 self.command_buffer = (
                     self.command_buffer[: self.cursor_pos - 1]
-                    + self.command_buffer[self.cursor_pos :]
+                    + self.command_buffer[self.cursor_pos:]
                 )
                 self.cursor_pos -= 1
         elif key == "KEY_DC":
             if self.cursor_pos < len(self.command_buffer):
                 self.command_buffer = (
                     self.command_buffer[: self.cursor_pos]
-                    + self.command_buffer[self.cursor_pos + 1 :]
+                    + self.command_buffer[self.cursor_pos + 1:]
                 )
         elif key == "KEY_RESIZE":
             pass
@@ -231,11 +239,12 @@ class Map:
                 self.hist_reset = False
             else:
                 try:
-                    self.command_buffer = self.console_history[
-                        (len(self.console_history) - (self.idx))
+                    self.command_buffer = self.command_history[
+                        (len(self.command_history) - (self.idx))
                     ]
                 except:
                     pass
+            self.cursor_pos = len(self.recent_chat)
         elif key == "KEY_DOWN":
             if self.idx == 0 and not self.hist_reset:
                 self.recent_chat = self.command_buffer
@@ -244,6 +253,7 @@ class Map:
                 self.idx = 0
                 self.hist_reset = False
             self.command_buffer = self.recent_chat
+            self.cursor_pos = len(self.command_buffer)
         elif key == "KEY_RIGHT":
             self.cursor_pos += 1
         elif key == "KEY_LEFT":
@@ -252,7 +262,7 @@ class Map:
             self.command_buffer = (
                 self.command_buffer[: self.cursor_pos]
                 + key
-                + self.command_buffer[self.cursor_pos :]
+                + self.command_buffer[self.cursor_pos:]
             )
             self.cursor_pos += 1
 
@@ -374,7 +384,7 @@ class Map:
 
     def __screen_size(self, stdscr: curses.window) -> None:
         h1, w1, h2, w2, h3, w3 = self.__get_win_sizes()
-        min_width = w1 + (w2 if w2 > w3 else w3)
+        min_width = 171
         min_height = h1 if h1 > (h2 + h3) else (h2 + h3)
         while curses.LINES < min_height or curses.COLS < min_width:
             stdscr.clear()
@@ -399,9 +409,10 @@ class Map:
         dash_h = offset_from_title_y + 1
 
         prompt_h = curses.LINES - dash_h
-        map_h = curses.LINES - 2
+        map_h = self.size * 4 + 2
+        map_w = self.size * 8 + 5
 
-        return map_h, map_h, dash_h, dash_width, prompt_h, dash_width
+        return map_h, map_w, dash_h, dash_width, prompt_h, dash_width
 
     def __setup_pads(
         self,
@@ -529,13 +540,18 @@ class Map:
     def refresh_map(self) -> None:
         """"""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
-        self.map_win.refresh(0, 0, 0, 0, my, mx)
+        self.map_win.refresh(
+            0, 0,
+            0, 0,
+            my - 1,
+            mx - 1,
+        )
 
     def refresh_ui(self, keu: str = "") -> None:
         """Refresh all UI panes in correct order."""
         my, mx, dy, dx, py, px = self.__get_win_sizes()
         ### DRAW TO INTERNAL BUFFER ###
-        self.map_win.noutrefresh(0, 0, 0, 0, my, mx)  # map (top-left)
+        self.map_win.noutrefresh(0, 0, 0, 0, my - 1, mx - 1)  # map (top-left)
         self.dash_win.noutrefresh(
             0, 0, 0, mx + 1, dy, curses.COLS - 1
         )  # dashboard (top-right)
@@ -656,7 +672,7 @@ class Map:
 
     @cursor_pos.setter
     def cursor_pos(self, pos):
-        self.__cursor_pos = max(0, min(pos, len(self.command_buffer)))
+        self.__cursor_pos = max(0, min(pos, len(self.recent_chat)))
 
     @property
     def idx(self):
@@ -700,18 +716,15 @@ class Square:
     """"""
 
     def __init__(self, size: int = 3) -> None:
-        """"""
         self.__size = size
         self.players = []
 
     @property
     def size(self) -> int:
-        """"""
         return self.__size
 
     @property
     def players(self) -> list:
-        """"""
         return self.__players
 
     @players.setter
@@ -719,38 +732,68 @@ class Square:
         self.__players = players
 
     def incoming(self, player: Player) -> None:
-        """"""
         self.players.append(player)
 
     def outgoing(self, player: Player) -> None:
-        """"""
         self.players.remove(player)
 
     def render(self, y: int, x: int, stdscr: curses.window) -> tuple:
-        """"""
-        square_y = y * (self.__size + 1)
-        square_x = x * (self.__size + 1)
-        stdscr.addstr(square_y, square_x, "-" * (self.__size + 2))
-        for i in range(1, self.__size + 1):
-            player = self.players[i - 1] if i - 1 < len(self.players) else None
-            stdscr.addstr(
-                square_y + i,
-                square_x,
-                "|"
-                + (
-                    " " * self.__size
-                    if player is None
-                    else f"{player.get_short_name():^{self.size}}"[
-                        0 : self.size
-                    ]
-                )
-                + "|",
+        height = 4
+        width = 8
+
+        square_y = y * height
+        square_x = x * width
+
+        pad_h, pad_w = stdscr.getmaxyx()
+
+        player = self.players[0] if self.players else None
+        default_text, text = "       ", ["       ", "       ", "       "]
+        if self.players:
+            player = self.players[0]
+            for i, player in enumerate(self.players):
+                text[i] = player.get_short_name()[:3].center(7)
+
+        if square_y + 3 >= pad_h:
+            raise RuntimeError(
+                f"Square ({x},{y}) exceeds pad height.\n"
+                f"pad={pad_h}x{pad_w}\n"
+                f"trying to draw row {square_y + 3}"
             )
-        stdscr.addstr(
-            square_y + self.__size + 1, square_x, "-" * (self.__size + 2)
-        )
-        return self.size + 2, self.size + 2
+
+        if square_x + 6 >= pad_w:
+            raise RuntimeError(
+                f"Square ({x},{y}) exceeds pad width.\n"
+                f"pad={pad_h}x{pad_w}\n"
+                f"trying to draw column {square_x + 6}"
+            )
+
+        try:
+            stdscr.addstr(square_y, square_x, "----------")
+        except curses.error:
+            raise RuntimeError(
+                f"Top border failed.\n"
+                f"pad={pad_h}x{pad_w}\n"
+                f"y={square_y}, x={square_x}"
+            )
+
+        try:
+            toptext = text[1] if text[1] is not default_text else default_text
+            stdscr.addstr(square_y + 1, square_x, f"|{toptext}",)
+            stdscr.addstr(
+                square_y + 2,
+                square_x,
+                "|" + text[0],
+            )
+            bottext = text[2] if text[2] is not default_text else default_text
+            stdscr.addstr(square_y + 3, square_x, f"|{bottext}",)
+        except curses.error:
+            raise RuntimeError(
+                f"Middle row failed.\n"
+                f"pad={pad_h}x{pad_w}\n"
+                f"y={square_y + 1}, x={square_x}"
+            )
+
+        return width, height
 
     def is_full(self) -> bool:
-        """"""
         return len(self.players) == self.__size

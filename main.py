@@ -2,6 +2,7 @@
 from Map import Map
 import curses
 import sys
+import traceback
 
 
 def winend():
@@ -33,6 +34,7 @@ except curses.error:
     winend()
     print("CURSES GO AHHHHH!")
     print(f"size is {x}x {y}y")
+    traceback.print_exc()
 except BaseException as e:
     winend()
     raise e
